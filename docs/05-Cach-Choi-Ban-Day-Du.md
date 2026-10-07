@@ -42,9 +42,66 @@
 
 ## PHẦN B — Dựng & chơi bản đầy đủ trong Unity (làm 1 lần)
 
+> **Có 2 đường:** dùng **bộ công cụ tự động** (~10 phút, khuyến nghị — mục ⚡ ngay dưới) hoặc **kéo thả thủ công** (mục 🐢, ~60–90 phút) nếu muốn hiểu từng chi tiết.
+
+### ⚡ CÁCH NHANH — bộ công cụ tự động trong `unity/Assets/Editor/`
+
+Repo kèm sẵn **4 file tool chạy thật** (không phải hướng dẫn giấy). Sau khi copy `unity/Assets/` vào project Unity, thanh menu sẽ có mục **`Vườn Mơ`**:
+
+| Menu | Tool làm gì |
+|---|---|
+| **Vườn Mơ ▸ 1 · Sinh Sprite Tạm** | Vẽ bằng code **~109 sprite pixel** (cỏ 4 mùa · nước · đường · 8 cây × 6 giai đoạn · nhân vật 4 hướng × 2 khung · 8 icon công cụ · nhà/kho/chuồng/giếng/cây/hàng rào/biển · 6 icon thời tiết · UI) → ghi vào `Assets/VuonMo/Art/Placeholder/` với **đúng cấu hình import** (Point filter · PPU 16 · không nén · không mipmap · pivot Bottom Center cho cây & nhân vật) |
+| **Vườn Mơ ▸ 2 · Tạo Dữ Liệu Mẫu** | Tạo `Tile` cho Tilemap · **8 CropData** đúng số liệu GDD §4.2 (ngày/giai đoạn, giá hạt & giá bán, mùa, XP, cây chịu Đông) · 8 nông sản + **8 túi hạt** + gỗ/đá · **4 SeasonTheme** · `CropDatabase` + `ItemDatabase` |
+| **Vườn Mơ ▸ 3 · DỰNG SCENE MẪU (chạy tất cả)** | Làm **TẤT CẢ** trong 1 cú bấm: tag/layer → gọi tool 1 + 2 → `GameManagers` (điền sẵn **8 weather profile**, tránh crash `profiles[0]`) → `Grid` + 5 Tilemap (tô cỏ 80×80) → `FarmGrid` + prefab `Crop_Base` + prefab `Loot_Base` + luống đất dọn sẵn → `Player` (Rigidbody2D, capsule, controller, interactor, Y-sort) → `Camera` (orthographic 5.625 + Pixel Perfect nếu có package) + `CameraFollow2D` → giường ngủ (`Bed2D`) · giếng (`WaterSource2D`) · **NPC bà Hòa** → `WeatherFX` + overlay ngày/đêm → **HUD đầy đủ** (đồng hồ, thời tiết, tiền, XP, thanh nước, hotbar 8 ô, prompt `[E]`, toast) → **lưu scene** `Assets/VuonMo/Scenes/VuonMo_Sample.unity` |
+| **Vườn Mơ ▸ Kiểm tra cấu hình project** | Báo cáo nhanh: gravity 2D, tag/layer, package 2D Pixel Perfect, sprite tạm, dữ liệu, scene — để biết còn thiếu gì trước khi bấm Play |
+
+**Quy trình 10 phút:**
+
+```
+1. Unity Hub → New project → 2D (URP) → tên project (đường dẫn KHÔNG dấu, KHÔNG khoảng trắng)
+2. Package Manager → cài: 2D Pixel Perfect · 2D Tilemap Editor · 2D Sprite
+3. Copy nguyên cây unity/Assets/ (Scripts + Editor) vào <project>/Assets/
+4. Chờ compile (Console phải 0 lỗi đỏ)
+5. Menu Vườn Mơ ▸ 3 · DỰNG SCENE MẪU → bấm "Dựng luôn"
+6. Bấm ▶ PLAY. Mở lại scene bất cứ lúc nào tại Assets/VuonMo/Scenes/VuonMo_Sample.unity
+```
+
+**Bộ tool cũng sửa sẵn 2 lỗi của code cũ** (đã ghi vào Changelog GDD):
+
+| Lỗi | Triệu chứng nếu không sửa | Cách sửa |
+|---|---|---|
+| `WeatherSystem.profiles` để trống | Gắn component xong bấm Play → `IndexOutOfRangeException` ngay ở `GetProfile()` (hàm trả về `profiles[0]`) | Tool điền sẵn 8 profile theo trọng số GDD §8.2; `Roll()` cần list này để chọn thời tiết |
+| Gieo hạt trừ **nông sản** thay vì **hạt** | Mua "Hạt cà chua" nhưng gieo lại mất "Cà chua" trong túi → chỉ có hạt thì không gieo được | `CropData` thêm trường `seedItem`; `Inventory.HasSeed/RemoveSeed` dùng `seedItem` (tự lùi về `harvestItem` với dữ liệu cũ) |
+
+**Xem trước khi cần mở Unity** (không cần cài gì, chỉ cần Python):
+
+```bash
+python3 docs/tools/preview-sprite-tam.py    # → art/preview-sprite-tam.png  (109 sprite xếp lưới)
+python3 docs/tools/mock-scene-tam.py        # → art/mock-scene-320x180.png  (giả lập màn chơi, tỉ lệ thật)
+```
+
+Hai script này **vẽ lại y hệt** cách `VuonMoSpriteForge.cs` vẽ sprite, nên bạn thấy trước được bộ art tạm
+(kể cả HUD) mà không phải mở Unity. Chúng cũng tự kiểm tra: vẽ tràn canvas · sprite rỗng · cây/công trình
+bị "nổi" trên mặt đất (pivot Bottom Center). **Sửa file C# thì nhớ sửa file Python tương ứng** rồi chạy lại.
+
+**Sau khi chạy tool, art vẫn là "tạm"** — thay dần bằng art thật theo `docs/03-Asset-2D-Sprite-Spec.md`, **giữ nguyên tên file** là mọi thứ tự nối lại (không phải sửa Inspector).
+
+**Tool cố tình KHÔNG làm (để bạn kiểm soát):**
+
+| Việc | Gợi ý |
+|---|---|
+| Va chạm tường/nước/hàng rào | `Tilemap_Collision` đã có TilemapCollider2D + CompositeCollider2D + Rigidbody2D static (renderer tắt sẵn) — chỉ cần **vẽ tile** lên đó |
+| Hạt mưa/tuyết/bão | Tạo ParticleSystem rồi gán vào `WeatherFX2D` (để trống vẫn chạy, chỉ thiếu hiệu ứng) |
+| Cây cối, chuồng trại trang trí | Kéo sprite `prop_tree`, `prop_barn`, `prop_coop`… vào scene, nhớ gắn `YSort2D` |
+| Vật nuôi / chế biến / câu cá / lễ hội | **Chưa có code** — mới có đặc tả trong GDD §5, §6, §9.4 |
+
+---
+
+### 🐢 CÁCH THỦ CÔNG — kéo thả từng bước
+
 **Tổng thời gian: ~60–90 phút.** Trong đó 20 phút cài Unity, 30–45 phút dựng scene, 15 phút tạo sprite tạm.
 
-### B0. Máy bạn cần gì
+#### B0. Máy bạn cần gì
 
 | Mục | Yêu cầu |
 |---|---|
@@ -56,7 +113,7 @@
 
 > ⚠️ **Đặt đường dẫn project bằng chữ không dấu, không khoảng trắng** (ví dụ `D:\VuonMo`), tránh lỗi lạ khi Unity build.
 
-### B1. Tạo project & copy code (10 phút)
+#### B1. Tạo project & copy code (10 phút)
 
 1. Unity Hub → **New project** → chọn **2D (URP)** → tên `VuonMo` → Create.
 2. Chờ Unity mở xong → **Window > Package Manager** → cài `2D Pixel Perfect`, `2D Tilemap Editor`, `2D Sprite`.
@@ -64,7 +121,7 @@
 4. Quay lại Unity, chờ compile → **Console phải 0 lỗi đỏ**.
    - Nếu có lỗi: xem Phần E bên dưới.
 
-### B2. Cấu hình project (5 phút)
+#### B2. Cấu hình project (5 phút)
 
 | Thiết lập | Ở đâu | Giá trị |
 |---|---|---|
@@ -74,7 +131,7 @@
 | PPU mặc định | Edit > Project Settings > Editor | Default Sprite PPU = **16** |
 | Frame rate | `PixelArtGlobal` trong scene (B4) | `targetFrameRate = 60` |
 
-### B3. Tạo dữ liệu (ScriptableObject) — 15 phút
+#### B3. Tạo dữ liệu (ScriptableObject) — 15 phút
 
 Chuột phải trong `Assets` → menu **`Create > Vườn Mơ > …`**:
 
@@ -88,7 +145,7 @@ Chuột phải trong `Assets` → menu **`Create > Vườn Mơ > …`**:
 
 > 💡 **Mẹo "chơi trước, vẽ sau":** chưa có sprite pixel? Vào `Assets > Create > 2D > Sprites > Square` (và `Capsule`) để có sprite trắng, kéo tạm vào các ô sprite. Chơi được ngay, cảm nhận vòng lặp trước, rồi mới vẽ art thật theo `docs/03-Asset-2D-Sprite-Spec.md`.
 
-### B4. Dựng scene "chuẩn" — 20 phút
+#### B4. Dựng scene "chuẩn" — 20 phút
 
 Bản đầy đủ cần **cây phân cấp** như trong `docs/02-Unity-Setup.md` §1. Checklist gọn (theo thứ tự thêm từ trên xuống):
 
@@ -115,7 +172,7 @@ Pixels Per Unit = 16   ·   Mesh Type = Full Rect   ·   Max Size = 2048
 ```
 > Chọn nhiều file cùng lúc rồi sửa 1 lần cho cả loạt.
 
-### B5. Bấm Play và kiểm thử 1 phút
+#### B5. Bấm Play và kiểm thử 1 phút
 
 | Bước | Làm gì | Thấy gì |
 |---|---|---|
@@ -128,11 +185,11 @@ Pixels Per Unit = 16   ·   Mesh Type = Full Rect   ·   Max Size = 2048
 
 > Muốn ngày trôi nhanh khi test: chọn `GameManagers > TimeManager`, đặt `minutesPerSecond = 60` (mặc định 1,25).
 
-### B6. (Tuỳ chọn) Script Execution Order
+#### B6. (Tuỳ chọn) Script Execution Order
 
 Đa số script đã tự khai báo `[DefaultExecutionOrder]` trong code, **không cần chỉnh tay**. Nếu vẫn muốn đặt thủ công: `Edit > Project Settings > Script Execution Order` theo bảng ở `docs/02-Unity-Setup.md` §6.
 
-### B7. Art thật & âm thanh
+#### B7. Art thật & âm thanh
 
 | Việc | Xem tài liệu |
 |---|---|

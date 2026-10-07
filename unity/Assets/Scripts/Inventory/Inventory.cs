@@ -104,12 +104,24 @@ namespace VuonMo.InventorySystem
         }
 
         // ---- Hạt giống ----------------------------------------------------
-        public bool HasSeed(CropData crop) => crop != null && crop.harvestItem != null && CountOf(crop.harvestItem) > 0;
+        /// <summary>Vật phẩm dùng làm hạt của cây này (ưu tiên seedItem, fallback harvestItem).</summary>
+        public ItemData SeedOf(CropData crop)
+        {
+            if (crop == null) return null;
+            return crop.seedItem != null ? crop.seedItem : crop.harvestItem;
+        }
+
+        public bool HasSeed(CropData crop)
+        {
+            ItemData seed = SeedOf(crop);
+            return seed != null && CountOf(seed) > 0;
+        }
 
         public void RemoveSeed(CropData crop)
         {
-            if (crop?.harvestItem == null) return;
-            Remove(crop.harvestItem, 1);
+            ItemData seed = SeedOf(crop);
+            if (seed == null) return;
+            Remove(seed, 1);
         }
 
         // ---- Tiền ---------------------------------------------------------

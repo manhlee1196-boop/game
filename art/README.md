@@ -68,6 +68,23 @@ bò to gấp mấy lần gà) và thứ tự khung animation — **không** dùn
 
 ---
 
+## 4–5. Ảnh **tự sinh từ code** (không phải AI) — dùng để QA bộ sprite tạm
+
+Hai ảnh này do `docs/tools/*.py` render ra, **khớp từng dòng** với cách `unity/Assets/Editor/VuonMoSpriteForge.cs`
+vẽ sprite. Sửa file C# thì phải sửa file Python cho khớp rồi chạy lại (2 lệnh, ~3 giây, không cần Unity).
+
+| Ảnh | Lệnh tạo | Nội dung |
+|---|---|---|
+| `preview-sprite-tam.png` | `python3 docs/tools/preview-sprite-tam.py` | 109 sprite tạm xếp lưới (ô đất · 8 cây × 6 giai đoạn · nông sản · túi hạt · công cụ · công trình · thời tiết · nhân vật · UI) |
+| `mock-scene-320x180.png` | `python3 docs/tools/mock-scene-tam.py` | **Giả lập màn chơi ở đúng tỉ lệ thật 320×180** (phóng 4×): ruộng, nhà, kho, chuồng, giếng, cây, hàng rào, ao, nhân vật + HUD đầy đủ |
+
+Bộ QA còn **tự kiểm tra** giúp bạn: sprite có vẽ tràn canvas không · sprite rỗng · nhân vật có chạm chân
+(pivot Bottom Center) không · cây/công trình có bị "nổi" trên mặt đất không (0 = đạt).
+
+> Ảnh AI ở mục 1–3 là **concept**; 2 ảnh ở mục 4–5 là **đúng cái game sẽ hiển thị** (chỉ là art tạm).
+
+---
+
 ## Sinh tiếp ảnh cho mùa khác (chạy ngay)
 
 Lấy prompt ở `docs/04-Concept-Art-Prompts.md` mục 2 (4 mùa) hoặc mục 3 (thời tiết/đêm), giữ nguyên

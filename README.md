@@ -17,7 +17,7 @@ Gói **Game Design Document + mã nguồn + đặc tả sprite + prompt concept 
 | 4 | [`docs/04-Concept-Art-Prompts.md`](docs/04-Concept-Art-Prompts.md) | **Prompt Midjourney/DALL·E/SDXL**: 2 prompt gốc (bản pixel) + ~25 prompt theo mùa/thời tiết/asset sheet, negative prompt, workflow Aseprite |
 | 5 | [`docs/05-Cach-Choi-Ban-Day-Du.md`](docs/05-Cach-Choi-Ban-Day-Du.md) | 🎮 **Cách chơi bản đầy đủ**: 3 cách chơi, checklist dựng Unity (60–90 phút), hướng dẫn chơi (điều khiển, vòng ngày, mùa vụ, 13 lễ hội, kinh tế, 10 NPC), tra cứu nhanh, xử lý sự cố |
 
-## 💻 Mã nguồn — `unity/Assets/Scripts/` (22 file C#, ~4.470 dòng)
+## 💻 Mã nguồn — 23 script runtime + 4 tool Editor (27 file C#, ~6.400 dòng)
 
 ```
 Core/       PixelArtGlobal · GameBootstrap · TimeManager · WeatherSystem · Enums · GameServices · WorldHelpers2D
@@ -51,6 +51,19 @@ Save/       SaveSystem (JSON + checksum + migrate) · CropDatabase · ItemDataba
 | `pixel-03-sprite-sheet.png` | Sprite sheet mẫu: cây, nhân vật 4 hướng, gia súc, công cụ |
 
 Prompt đầy đủ (kèm tham số) nằm trong [`art/README.md`](art/README.md).
+
+## ⚡ Dựng bản đầy đủ trong ~10 phút (bộ tool Editor)
+
+Repo kèm **4 tool chạy thật** trong `unity/Assets/Editor/` — vào Unity sẽ thấy menu **`Vườn Mơ`**:
+
+| Menu | Việc |
+|---|---|
+| `Vườn Mơ ▸ 1 · Sinh Sprite Tạm` | Vẽ ~109 sprite pixel 16×16 bằng code (4 mùa, 8 cây × 6 giai đoạn, nhân vật, công cụ, công trình, thời tiết) + cấu hình import chuẩn |
+| `Vườn Mơ ▸ 2 · Tạo Dữ Liệu Mẫu` | 8 CropData (số liệu GDD §4.2), 8 nông sản + 8 túi hạt, 4 SeasonTheme, 2 Database, Tile cho Tilemap |
+| `Vườn Mơ ▸ 3 · DỰNG SCENE MẪU` | **1 cú bấm**: tag/layer → sprite → dữ liệu → GameManagers → Grid + 5 Tilemap → FarmGrid + prefab → Player → Camera → giường/giếng/NPC → WeatherFX → HUD → lưu scene |
+| `Vườn Mơ ▸ Kiểm tra cấu hình project` | Báo cáo còn thiếu gì (gravity, tag/layer, package, sprite, dữ liệu) |
+
+Hướng dẫn từng bước + việc còn phải làm tay: [`docs/05-Cach-Choi-Ban-Day-Du.md`](docs/05-Cach-Choi-Ban-Day-Du.md) Phần B.
 
 ## 🎮 Chơi thử ngay (không cần Unity)
 

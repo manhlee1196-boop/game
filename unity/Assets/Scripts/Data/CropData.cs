@@ -44,6 +44,11 @@ namespace VuonMo.Data
         public Season[] allowedSeasons = new Season[0];
         public bool survivesWinterOutdoor = false;
 
+        [Header("Hạt giống")]
+        [Tooltip("Vật phẩm hạt giống của cây này — trừ khi gieo hạt (túi đồ). " +
+                 "Nếu để trống, hệ thống sẽ dùng harvestItem làm hạt (tương thích dữ liệu cũ).")]
+        public ItemData seedItem;
+
         [Header("Thu hoạch")]
         public ItemData harvestItem;
         public int minYield = 1;

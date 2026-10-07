@@ -23,7 +23,8 @@ game/
 │   ├── 03-Asset-2D-Sprite-Spec.md     ← Prompt 3
 │   └── 04-Concept-Art-Prompts.md      ← Prompt 4
 ├── playtest/                          ← bản CHƠI THỬ trên trình duyệt (JS/Canvas, không cần Unity)
-├── unity/Assets/Scripts/              ← code Unity 2D (C#)
+├── unity/Assets/Editor/              ← 4 TOOL dựng nhanh (menu "Vườn Mơ": sinh sprite tạm · tạo dữ liệu · dựng scene · kiểm tra)
+├── unity/Assets/Scripts/              ← code Unity 2D (C#, 23 file)
 │   ├── Core/         PixelArtGlobal · GameBootstrap · TimeManager · WeatherSystem · Enums · GameServices · WorldHelpers2D · CameraFollow2D
 │   ├── Data/         CropData (4 sprite) · ItemData · SeasonTheme
 │   ├── Farming/      CropInstance · FarmGrid (Tilemap + dữ liệu) · LootSpawner · ItemPickup
@@ -55,6 +56,11 @@ game/
 | Chăn nuôi, chế biến, lễ hội, co-op | 📋 Đặc tả trong GDD | Chờ triển khai ở milestone M2–M3 |
 
 ## Bắt đầu nhanh
+
+**Đường nhanh (~10 phút):** copy `unity/Assets/` vào project Unity 6 – 2D → menu **`Vườn Mơ ▸ 3 · DỰNG SCENE MẪU`** → bấm Play. Tool tự sinh sprite tạm + dữ liệu + cả scene.
+Chi tiết & việc còn phải làm tay: `docs/05-Cach-Choi-Ban-Day-Du.md` Phần B.
+
+**Đường thủ công (để hiểu từng chi tiết):**
 
 1. **Đọc GDD** → `docs/01-GDD.md` (mục 2: đặc tả pixel; mục 7: tương tác & grid).
 2. **Tạo project Unity 6 – template 2D** → copy `unity/Assets/Scripts` vào `Assets/`.

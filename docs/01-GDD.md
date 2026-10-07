@@ -454,5 +454,6 @@ Khô > 5 ngày liên tiếp → Dead (chỉ cuốc bỏ, mất hạt)
 ### Changelog
 | Phiên bản | Ngày | Thay đổi |
 |---|---|---|
+| v2.1 | 2026-10-08 | **Sửa 2 lỗi hệ thống + thêm bộ công cụ dựng nhanh**: (1) `CropData` thêm `seedItem` — gieo hạt trước đây trừ nhầm *nông sản* thay vì *hạt giống*; (2) `WeatherSystem.profiles` được điền sẵn 8 profile theo §8.2 — để trống sẽ crash ở `GetProfile()`. Thêm `Assets/Editor/` (4 tool: sinh sprite tạm, tạo dữ liệu, dựng scene, kiểm tra cấu hình) + `StarterPlot2D` (dọn sẵn luống đất cho người mới) + `CameraFollow2D`. Chi tiết: `docs/05-Cach-Choi-Ban-Day-Du.md` Phần B |
 | v2.0 | 2026-10-07 | **Chuyển toàn bộ sang 2D pixel art top-down**: 320×180 @ PPU 16, palette 48 màu, animation sprite, HUD pixel, tech spec 2D, lộ trình rút còn 15 tháng |
 | v1.0 | 2026-10-07 | Bản GDD 3D low-poly đầu tiên (đã lưu trữ trong lịch sử git, commit `899b8e0`) |
