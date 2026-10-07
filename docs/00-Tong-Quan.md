@@ -7,7 +7,7 @@ Bộ tài liệu + code cho tựa game **nông trại 2D pixel art top-down, pho
 | Prompt | Nội dung yêu cầu | Sản phẩm trong repo |
 |---|---|---|
 | **1. GDD** | Game Design Document chi tiết | 📄 [`docs/01-GDD.md`](01-GDD.md) — 16 mục: **visual style pixel 2D (320×180 @ PPU 16, palette 48 màu)**, core loop, trồng trọt, chăn nuôi, chế biến, tương tác 2D, grid 16×16 px, 4 mùa & 8 thời tiết, 10 NPC + 13 lễ hội, kinh tế, HUD pixel, audio, save, tech spec 2D, lộ trình 15 tháng |
-| **2. Code** | CropScript 4 giai đoạn + E để tưới/thu hoạch + spawn loot + cách gắn script | 💻 [`unity/Assets/Scripts/`](../unity/Assets/Scripts/) (**21 file C#**) · 📄 [`docs/02-Unity-Setup.md`](02-Unity-Setup.md) |
+| **2. Code** | CropScript 4 giai đoạn + E để tưới/thu hoạch + spawn loot + cách gắn script | 💻 [`unity/Assets/Scripts/`](../unity/Assets/Scripts/) (**22 file C#**) · 📄 [`docs/02-Unity-Setup.md`](02-Unity-Setup.md) |
 | **3. Bảng asset** | Danh sách asset kèm polygon/animation, phân nhóm | 📄 [`docs/03-Asset-2D-Sprite-Spec.md`](03-Asset-2D-Sprite-Spec.md) — **~1.920 khung sprite**, 4 nhóm, kích thước/kHung animation/palette, checklist QA |
 | **4. Prompt concept art** | Câu lệnh cho Midjourney/DALL·E | 📄 [`docs/04-Concept-Art-Prompts.md`](04-Concept-Art-Prompts.md) — 2 prompt gốc (bản pixel) + ~25 prompt theo mùa/thời tiết/asset sheet + workflow Aseprite |
 
@@ -22,8 +22,9 @@ game/
 │   ├── 02-Unity-Setup.md              ← Prompt 2 (lắp script vào Unity 2D)
 │   ├── 03-Asset-2D-Sprite-Spec.md     ← Prompt 3
 │   └── 04-Concept-Art-Prompts.md      ← Prompt 4
+├── playtest/                          ← bản CHƠI THỬ trên trình duyệt (JS/Canvas, không cần Unity)
 ├── unity/Assets/Scripts/              ← code Unity 2D (C#)
-│   ├── Core/         PixelArtGlobal · GameBootstrap · TimeManager · WeatherSystem · Enums · GameServices · WorldHelpers2D
+│   ├── Core/         PixelArtGlobal · GameBootstrap · TimeManager · WeatherSystem · Enums · GameServices · WorldHelpers2D · CameraFollow2D
 │   ├── Data/         CropData (4 sprite) · ItemData · SeasonTheme
 │   ├── Farming/      CropInstance · FarmGrid (Tilemap + dữ liệu) · LootSpawner · ItemPickup
 │   ├── Player/       PlayerController2D · PlayerInteractor2D (phím E)
@@ -60,6 +61,8 @@ game/
 3. **Làm theo** `docs/02-Unity-Setup.md` mục 0 (Pixel Perfect Camera + import texture) rồi mục 1–4 (scene, FarmGrid, CropInstance, Player).
 4. **Bấm Play** → `1` + `E` cuốc đất → `8` + `E` gieo hạt → `2` + `E` tưới → để ngày trôi → `E` thu hoạch.
 5. **Vẽ sprite** theo `docs/03-Asset-2D-Sprite-Spec.md`, tạo mood trước bằng prompt ở `docs/04-Concept-Art-Prompts.md`.
+6. **Muốn chơi ngay mà chưa dựng Unity?** → `playtest/index.html` (bản chơi thử trên trình duyệt).
+7. **Hướng dẫn chơi đầy đủ** (điều khiển, vòng ngày, mùa vụ, lễ hội, kinh tế) → `docs/05-Cach-Choi-Ban-Day-Du.md`.
 
 > Tài liệu là **living document** — thay đổi cân bằng ghi vào Changelog cuối GDD.
 > Bản 3D low-poly trước đây vẫn nằm trong **lịch sử git** (commit `899b8e0`) nếu bạn muốn tham khảo lại.

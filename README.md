@@ -15,8 +15,9 @@ Gói **Game Design Document + mã nguồn + đặc tả sprite + prompt concept 
 | 2 | [`docs/02-Unity-Setup.md`](docs/02-Unity-Setup.md) | **Cách gắn script vào Object** (Unity 2D): Pixel Perfect Camera, cấu hình import texture, scene mẫu, Animator, xử lý sự cố |
 | 3 | [`docs/03-Asset-2D-Sprite-Spec.md`](docs/03-Asset-2D-Sprite-Spec.md) | **Bảng đặc tả ~1.920 khung sprite**: tên, kích thước, số khung animation, palette, pivot, ngân sách thời gian, checklist QA |
 | 4 | [`docs/04-Concept-Art-Prompts.md`](docs/04-Concept-Art-Prompts.md) | **Prompt Midjourney/DALL·E/SDXL**: 2 prompt gốc (bản pixel) + ~25 prompt theo mùa/thời tiết/asset sheet, negative prompt, workflow Aseprite |
+| 5 | [`docs/05-Cach-Choi-Ban-Day-Du.md`](docs/05-Cach-Choi-Ban-Day-Du.md) | 🎮 **Cách chơi bản đầy đủ**: 3 cách chơi, checklist dựng Unity (60–90 phút), hướng dẫn chơi (điều khiển, vòng ngày, mùa vụ, 13 lễ hội, kinh tế, 10 NPC), tra cứu nhanh, xử lý sự cố |
 
-## 💻 Mã nguồn — `unity/Assets/Scripts/` (21 file C#, ~4.000 dòng)
+## 💻 Mã nguồn — `unity/Assets/Scripts/` (22 file C#, ~4.470 dòng)
 
 ```
 Core/       PixelArtGlobal · GameBootstrap · TimeManager · WeatherSystem · Enums · GameServices · WorldHelpers2D
@@ -51,7 +52,15 @@ Save/       SaveSystem (JSON + checksum + migrate) · CropDatabase · ItemDataba
 
 Prompt đầy đủ (kèm tham số) nằm trong [`art/README.md`](art/README.md).
 
+## 🎮 Chơi thử ngay (không cần Unity)
+
+**[`playtest/index.html`](playtest/index.html)** — bản mô phỏng JS/Canvas của các hệ thống lõi (trồng trọt 4 giai đoạn,
+nước, mùa/thời tiết, loot, bán hàng, NPC). Mở file bằng trình duyệt là chơi được, không cần internet.
+Hướng dẫn & bảng đối chiếu: [`playtest/README.md`](playtest/README.md).
+
 ## 🚀 Bắt đầu nhanh
+
+> Muốn chơi **bản đầy đủ**? Làm theo [`docs/05-Cach-Choi-Ban-Day-Du.md`](docs/05-Cach-Choi-Ban-Day-Du.md) — có checklist từng bước + thời gian ước tính.
 
 1. Đọc [`docs/01-GDD.md`](docs/01-GDD.md) (mục 2 và 7 là phần pixel + tương tác).
 2. Tạo project **Unity 6 – 2D** → copy `unity/Assets/Scripts` vào `Assets/`.
