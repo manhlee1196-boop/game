@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vườn Mơ — Chơi thử (bản 2D pixel)</title>
+<style>
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    background: #12101a;
+    color: #FFE9B8;
+    font-family: "Courier New", monospace;
+    overflow: hidden;
+  }
+  #wrap {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  canvas#game {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    -ms-interpolation-mode: nearest-neighbor;
+    display: block;
+    box-shadow: 0 0 0 2px #3B2A33, 0 0 40px rgba(0,0,0,0.8);
+    outline: none;
+  }
+  /* ---- Màn hình bắt đầu ---- */
+  #start {
+    position: fixed; inset: 0;
+    background: rgba(18,16,26,0.96);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; padding: 20px; box-sizing: border-box;
+    z-index: 10;
+  }
+  #start h1 {
+    font-size: 34px; margin: 0 0 4px; letter-spacing: 2px; color: #FFD34E;
+    text-shadow: 3px 3px 0 #3B2A33;
+  }
+  #start h2 { font-size: 13px; font-weight: normal; color: #8FD06B; margin: 0 0 18px; letter-spacing: 1px; }
+  #start p { font-size: 12px; line-height: 1.7; color: #C8D4E0; max-width: 560px; margin: 0 0 16px; }
+  .btn {
+    font-family: inherit; font-size: 14px; padding: 10px 22px; margin: 5px;
+    background: #FFD34E; color: #3B2A33; border: none; cursor: pointer;
+    box-shadow: 3px 3px 0 #3B2A33; letter-spacing: 1px;
+  }
+  .btn:hover { background: #FFE9B8; }
+  .btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 #3B2A33; }
+  .btn.alt { background: #8FD06B; }
+  .btn.alt:hover { background: #B8E89A; }
+  .btn[disabled] { background: #6E7A88; color: #3B2A33; cursor: not-allowed; }
+  #keys { font-size: 11px; color: #9AA5B1; margin-top: 14px; line-height: 1.8; }
+  #keys b { color: #FFE9B8; }
+  #foot { position: fixed; bottom: 8px; width: 100%; text-align: center; font-size: 10px; color: #6E7A88; z-index: 11; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="game" width="384" height="216" tabindex="0"></canvas>
+</div>
+
+<div id="start">
+  <h1>VƯỜN MƠ</h1>
+  <h2>Harvest Hearth — bản chơi thử 2D pixel</h2>
+  <p>
+    Bản chạy thử trên trình duyệt của hệ thống trồng trọt &amp; thu hoạch trong
+    <b>unity/Assets/Scripts/</b> — cùng quy tắc: cây 4 giai đoạn, ngày game, mưa tưới miễn phí,
+    thu hoạch nhả loot, 4 mùa &amp; thời tiết, HUD pixel 16×16.
+  </p>
+  <div>
+    <button class="btn" id="btnNew">CHƠI MỚI</button>
+    <button class="btn alt" id="btnContinue">TIẾP TỤC</button>
+  </div>
+  <div id="keys">
+    <b>WASD</b> đi · <b>Shift</b> chạy · <b>E</b> tương tác ô trước mặt<br>
+    <b>1</b> Cuốc · <b>2</b> Bình tưới · <b>4</b> Rìu · <b>8/Q</b> đổi hạt · <b>B</b> mua hạt<br>
+    <b>T</b> tua 1 ngày · <b>R</b> đổi thời tiết · <b>H</b> hướng dẫn · <b>P</b> ẩn HUD
+  </div>
+</div>
+<div id="foot">Game không dùng file ảnh ngoài — toàn bộ sprite được vẽ bằng code theo palette 48 màu trong GDD.</div>
+
+<script src="js/pixel.js"></script>
+<script src="js/world.js"></script>
+<script src="js/game.js"></script>
+<script>
+(function () {
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const startEl = document.getElementById('start');
+  const game = window.VM.game;
+
+  /* ---- scale nguyên (integer) để pixel không bị nhoè ---- */
+  function resize() {
+    const maxW = window.innerWidth - 16;
+    const maxH = window.innerHeight - 16;
+    let scale = Math.min(Math.floor(maxW / 384), Math.floor(maxH / 216));
+    scale = Math.max(1, Math.min(scale, 6));
+    canvas.style.width = (384 * scale) + 'px';
+    canvas.style.height = (216 * scale) + 'px';
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  /* ---- nhập liệu bàn phím ---- */
+  const MOVE = ['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'shift'];
+  function keyName(e) {
+    if (e.key === 'Shift') return 'shift';
+    if (e.key === 'Escape') return 'escape';
+    if (e.key.length === 1) return e.key.toLowerCase();
+    return e.key.toLowerCase();
+  }
+  window.addEventListener('keydown', function (e) {
+    const k = keyName(e);
+    if (MOVE.indexOf(k) >= 0) { game.hold(k, true); e.preventDefault(); }
+    if (e.repeat) return;
+    if (/^( |arrow)/.test(e.key)) e.preventDefault();
+    if (document.activeElement !== canvas && startEl.style.display !== 'none') return;
+    game.press(k);
+  });
+  window.addEventListener('keyup', function (e) {
+    const k = keyName(e);
+    if (MOVE.indexOf(k) >= 0) { game.hold(k, false); e.preventDefault(); }
+  });
+  window.addEventListener('blur', function () {
+    MOVE.forEach(function (k) { game.hold(k, false); });
+  });
+
+  /* ---- nút bắt đầu ---- */
+  const btnNew = document.getElementById('btnNew');
+  const btnContinue = document.getElementById('btnContinue');
+  if (!game.hasSave()) btnContinue.disabled = true;
+
+  function begin(which) {
+    if (which === 'new') game.newGame(); else game.continueGame();
+    startEl.style.display = 'none';
+    canvas.focus();
+    if (window.innerWidth > window.innerHeight) resize();
+  }
+  btnNew.addEventListener('click', function () { begin('new'); });
+  btnContinue.addEventListener('click', function () { begin('continue'); });
+  window.addEventListener('keydown', function (e) {
+    if (startEl.style.display !== 'none' && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      begin(game.hasSave() ? 'continue' : 'new');
+    }
+  });
+
+  /* ---- vòng lặp game ---- */
+  let last = performance.now();
+  function frame(now) {
+    let dt = (now - last) / 1000;
+    last = now;
+    if (dt > 0.05) dt = 0.05;          // chống nhảy khung khi tab bị ẩn
+    game.update(dt);
+    ctx.imageSmoothingEnabled = false;
+    ctx.clearRect(0, 0, 384, 216);
+    game.draw(ctx);
+    game.drawHelp(ctx);
+    if (game.paused) { /* vẽ thêm lớp mờ khi pause */
+      ctx.fillStyle = 'rgba(18,16,26,0.6)';
+      ctx.fillRect(0, 0, 384, 216);
+      window.VM.textCenter(ctx, 'TẠM DỪNG — bấm Esc để tiếp tục', 192, 104, '#FFD34E', 10);
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  /* ---- API cho smoke test ---- */
+  window.__VUONMO__ = { game: game, ctx: ctx, canvas: canvas };
+})();
+</script>
+</body>
+</html>
