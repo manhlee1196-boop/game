@@ -1,5 +1,5 @@
 // ============================================================================
-//  SaveSystem.cs — Lưu/tải game dạng JSON có checksum, hỗ trợ migrate phiên bản
+//  SaveSystem.cs — Lưu/tải JSON cho game 2D pixel (3 khe + checksum + migrate)
 //  Đặt tại: Assets/Scripts/Save/
 // ============================================================================
 using System;
@@ -11,13 +11,14 @@ using VuonMo.Data;
 using VuonMo.Farming;
 using VuonMo.InventorySystem;
 using VuonMo.NPCSystem;
+using VuonMo.Player;
 
 namespace VuonMo.SaveSystem
 {
     [Serializable]
     public class SaveData
     {
-        public int saveVersion = 1;
+        public int saveVersion = 2;
         public string savedAtIso;
 
         // Thời gian
@@ -26,49 +27,53 @@ namespace VuonMo.SaveSystem
         public int day = 1;
         public int hour = 6;
         public int minute = 0;
-        public double totalMinutes = 0;
+        public double totalMinutes;
+        public bool wellRested;
 
-        // Thời tiết
+        // Thời tiết (dự báo 3 ngày)
         public int weatherToday, weatherTomorrow, weatherAfter;
 
         // Người chơi
-        public float[] playerPos = new float[3];
-        public float playerYaw;
+        public float playerX, playerY;
+        public int playerFacing;
         public int waterCharges = 20;
+        public int selectedTool = 0;
+        public string selectedSeedId = "";
 
-        // Túi đồ & ruộng
+        // Dữ liệu lớn
         public Inventory.SaveData inventory = new Inventory.SaveData();
         public List<FarmGrid.TileSave> tiles = new List<FarmGrid.TileSave>();
 
         // Cộng đồng
         public List<int> npcHeartPoints = new List<int>();
-        public List<bool> npcTalkedToday = new List<bool>();
+
+        // Tiến trình
+        public int farmingXp;
+        public int farmingLevel = 1;
 
         public string checksum = "";
     }
 
     public static class SaveSystem
     {
-        public const int CurrentVersion = 1;
-        private const string FolderName = "VườnMơSaves";
+        public const int CurrentVersion = 2;
+        private const string FolderName = "VuonMoSaves";
 
         private static string Folder => Path.Combine(Application.persistentDataPath, FolderName);
+        public static string PathFor(int slot) => Path.Combine(Folder, $"slot{slot}.json");
 
-        public static string PathFor(int slot) => Path.Combine(Folder, $"save_slot{slot}.json");
-
-        // ------------------------------------------------------------------
-        public static bool Save(int slot, CropData[] cropDatabase, NPCRegistry npcRegistry = null)
+        // ==================================================================
+        //  LƯU
+        // ==================================================================
+        public static bool Save(int slot, CropDatabase cropDatabase = null)
         {
             try
             {
                 Directory.CreateDirectory(Folder);
 
-                var data = new SaveData
-                {
-                    saveVersion = CurrentVersion,
-                    savedAtIso = DateTime.UtcNow.ToString("o")
-                };
+                var data = new SaveData { saveVersion = CurrentVersion, savedAtIso = DateTime.UtcNow.ToString("o") };
 
+                // --- Thời gian ---
                 var tm = TimeManager.Instance;
                 if (tm != null)
                 {
@@ -78,8 +83,10 @@ namespace VuonMo.SaveSystem
                     data.hour = tm.Hour;
                     data.minute = tm.Minute;
                     data.totalMinutes = tm.TotalMinutes;
+                    data.wellRested = tm.wellRestedBuff;
                 }
 
+                // --- Thời tiết ---
                 var ws = WeatherSystem.Instance;
                 if (ws != null)
                 {
@@ -88,85 +95,117 @@ namespace VuonMo.SaveSystem
                     data.weatherAfter = (int)ws.DayAfter;
                 }
 
-                var player = GameObject.FindGameObjectWithTag("Player");
-                if (player != null)
+                // --- Người chơi ---
+                var playerGo = GameObject.FindGameObjectWithTag("Player");
+                if (playerGo != null)
                 {
-                    data.playerPos = new float[] { player.transform.position.x, player.transform.position.y, player.transform.position.z };
-                    data.playerYaw = player.transform.eulerAngles.y;
-                    var interactor = player.GetComponent<Interaction.PlayerInteractor>();
-                    if (interactor != null) data.waterCharges = interactor.WaterCharges;
+                    data.playerX = playerGo.transform.position.x;
+                    data.playerY = playerGo.transform.position.y;
+
+                    var motor = playerGo.GetComponent<PlayerController2D>();
+                    if (motor != null) data.playerFacing = (int)motor.Facing;
+
+                    var interactor = playerGo.GetComponent<PlayerInteractor2D>();
+                    if (interactor != null)
+                    {
+                        data.waterCharges = interactor.WaterCharges;
+                        data.selectedTool = (int)interactor.CurrentTool;
+                        data.selectedSeedId = interactor.SelectedSeed != null ? interactor.SelectedSeed.cropId : "";
+                    }
                 }
 
+                // --- Túi đồ, ruộng, NPC, XP ---
                 if (Inventory.Instance != null) data.inventory = Inventory.Instance.GetSave();
                 if (FarmGrid.Instance != null) data.tiles = FarmGrid.Instance.GetSave();
-
-                if (npcRegistry != null)
+                if (NPCRegistry2D.Instance != null) data.npcHeartPoints = NPCRegistry2D.Instance.GetHeartPoints();
+                if (PlayerStats.Instance != null)
                 {
-                    data.npcHeartPoints = npcRegistry.GetHeartPoints();
-                    data.npcTalkedToday = npcRegistry.GetTalkedFlags();
+                    data.farmingXp = PlayerStats.Instance.farmingXp;
+                    data.farmingLevel = PlayerStats.Instance.farmingLevel;
                 }
 
+                // --- Ghi file (có checksum) ---
                 string json = JsonUtility.ToJson(data, true);
                 data.checksum = ComputeChecksum(json);
                 json = JsonUtility.ToJson(data, true);
-
                 File.WriteAllText(PathFor(slot), json);
-                Debug.Log($"[Save] Đã lưu vào slot {slot}: {PathFor(slot)}");
+
+                Debug.Log($"[Save] Đã lưu slot {slot} → {PathFor(slot)}");
                 return true;
             }
             catch (Exception e)
             {
-                Debug.LogError("[Save] Lỗi khi lưu: " + e.Message);
+                Debug.LogError("[Save] Lỗi khi lưu: " + e);
                 return false;
             }
         }
 
-        // ------------------------------------------------------------------
-        public static bool Load(int slot, CropData[] cropDatabase, NPCRegistry npcRegistry = null)
+        // ==================================================================
+        //  TẢI
+        // ==================================================================
+        public static bool Load(int slot, CropDatabase cropDatabase = null)
         {
             string path = PathFor(slot);
             if (!File.Exists(path))
             {
-                Debug.LogWarning("[Save] Không tìm thấy file save: " + path);
+                Debug.LogWarning("[Save] Không có file: " + path);
                 return false;
             }
 
             try
             {
-                string json = File.ReadAllText(path);
-                var data = JsonUtility.FromJson<SaveData>(json);
+                var data = JsonUtility.FromJson<SaveData>(File.ReadAllText(path));
                 if (data == null) return false;
-
                 data = Migrate(data);
 
+                // --- Thời gian ---
                 TimeManager.Instance?.LoadFrom(data.year, (Season)data.season, data.day, data.hour, data.minute, data.totalMinutes);
+                if (TimeManager.Instance != null) TimeManager.Instance.wellRestedBuff = data.wellRested;
 
-                if (WeatherSystem.Instance != null)
-                    WeatherSystem.Instance.ForceWeather((WeatherType)data.weatherToday);
+                // --- Thời tiết ---
+                if (WeatherSystem.Instance != null) WeatherSystem.Instance.ForceWeather((WeatherType)data.weatherToday);
 
+                // --- Túi đồ ---
                 if (Inventory.Instance != null)
-                    Inventory.Instance.LoadSave(data.inventory, id => FindById(cropDatabase, id));
+                    Inventory.Instance.LoadSave(data.inventory, id => ItemDatabase.Instance != null ? ItemDatabase.Instance.Find(id) : null);
 
+                // --- Ruộng ---
                 if (FarmGrid.Instance != null)
-                    FarmGrid.Instance.LoadSave(data.tiles, id => FindCropById(cropDatabase, id));
-
-                var player = GameObject.FindGameObjectWithTag("Player");
-                if (player != null && data.playerPos != null && data.playerPos.Length == 3)
                 {
-                    var cc = player.GetComponent<CharacterController>();
-                    if (cc != null) cc.enabled = false;   // tránh bị đẩy xuyên địa hình khi teleport
-                    player.transform.position = new Vector3(data.playerPos[0], data.playerPos[1], data.playerPos[2]);
-                    player.transform.rotation = Quaternion.Euler(0f, data.playerYaw, 0f);
-                    if (cc != null) cc.enabled = true;
-
-                    var interactor = player.GetComponent<Interaction.PlayerInteractor>();
-                    if (interactor != null && data.waterCharges > 0) interactor.RefillWater();
+                    Func<string, CropData> lookup = id =>
+                    {
+                        if (CropDatabase.Instance != null)
+                        {
+                            var c = CropDatabase.Instance.Find(id);
+                            if (c != null) return c;
+                        }
+                        if (cropDatabase != null) foreach (var c in cropDatabase.crops) if (c != null && c.cropId == id) return c;
+                        return null;
+                    };
+                    FarmGrid.Instance.LoadSave(data.tiles, lookup);
                 }
 
-                if (npcRegistry != null)
+                // --- Người chơi ---
+                var playerGo = GameObject.FindGameObjectWithTag("Player");
+                if (playerGo != null)
                 {
-                    npcRegistry.LoadHeartPoints(data.npcHeartPoints);
-                    npcRegistry.LoadTalkedFlags(data.npcTalkedToday);
+                    playerGo.transform.position = new Vector3(data.playerX, data.playerY, 0f);
+
+                    var interactor = playerGo.GetComponent<PlayerInteractor2D>();
+                    if (interactor != null)
+                    {
+                        if (data.waterCharges > 0) interactor.RefillWater();
+                        interactor.SetTool((ToolType)data.selectedTool);
+                        if (!string.IsNullOrEmpty(data.selectedSeedId) && CropDatabase.Instance != null)
+                            interactor.SetSeed(CropDatabase.Instance.Find(data.selectedSeedId));
+                    }
+                }
+
+                // --- NPC & XP ---
+                if (NPCRegistry2D.Instance != null) NPCRegistry2D.Instance.LoadHeartPoints(data.npcHeartPoints);                if (PlayerStats.Instance != null)
+                {
+                    PlayerStats.Instance.farmingXp = data.farmingXp;
+                    PlayerStats.Instance.farmingLevel = Mathf.Max(1, data.farmingLevel);
                 }
 
                 Debug.Log("[Save] Đã tải slot " + slot);
@@ -174,12 +213,14 @@ namespace VuonMo.SaveSystem
             }
             catch (Exception e)
             {
-                Debug.LogError("[Save] Lỗi khi tải: " + e.Message);
+                Debug.LogError("[Save] Lỗi khi tải: " + e);
                 return false;
             }
         }
 
-        // ------------------------------------------------------------------
+        // ==================================================================
+        //  TIỆN ÍCH
+        // ==================================================================
         public static bool HasSave(int slot) => File.Exists(PathFor(slot));
 
         public static void Delete(int slot)
@@ -188,17 +229,30 @@ namespace VuonMo.SaveSystem
             if (File.Exists(p)) File.Delete(p);
         }
 
-        /// <summary>Tự động lưu khi ngủ (được gọi bởi BedInteractable).</summary>
-        public static void AutoSaveOnSleep(CropData[] db)
+        /// <summary>Thông tin tóm tắt để hiện ở menu "Tiếp tục" (không cần tải cả game).</summary>
+        public static string GetSlotSummary(int slot)
         {
-            Save(0, db);
+            if (!HasSave(slot)) return "— Trống —";
+            try
+            {
+                var data = JsonUtility.FromJson<SaveData>(File.ReadAllText(PathFor(slot)));
+                if (data == null) return "— Lỗi dữ liệu —";
+                string[] seasons = { "Xuân", "Hạ", "Thu", "Đông" };
+                string season = (data.season >= 0 && data.season < 4) ? seasons[data.season] : "?";
+                return $"Năm {data.year} · {season} ngày {data.day} · {data.hour:00}:{data.minute:00} · {data.inventory.gold:N0} G";
+            }
+            catch { return "— Lỗi dữ liệu —"; }
         }
 
-        // ------------------------------------------------------------------
         private static SaveData Migrate(SaveData data)
         {
-            // Ví dụ: if (data.saveVersion < 2) { data.somethingNew = default; data.saveVersion = 2; }
-            if (data.saveVersion < CurrentVersion) data.saveVersion = CurrentVersion;
+            // v1 (bản 3D) -> v2 (bản 2D): cấu trúc ô đất đổi toạ độ, nên bỏ ô không hợp lệ.
+            if (data.saveVersion < 2)
+            {
+                data.tiles = new List<FarmGrid.TileSave>();
+                data.saveVersion = 2;
+                Debug.LogWarning("[Save] Đã migrate save từ v1 (3D) sang v2 (2D) — ruộng được làm mới.");
+            }
             return data;
         }
 
@@ -206,30 +260,14 @@ namespace VuonMo.SaveSystem
         {
             using (var md5 = System.Security.Cryptography.MD5.Create())
             {
-                byte[] bytes = System.Text.Encoding.UTF8.GetBytes(json);
-                byte[] hash = md5.ComputeHash(bytes);
+                byte[] hash = md5.ComputeHash(System.Text.Encoding.UTF8.GetBytes(json));
                 return BitConverter.ToString(hash).Replace("-", "").Substring(0, 8);
             }
-        }
-
-        private static ItemData FindById(CropData[] db, string itemId)
-        {
-            if (string.IsNullOrEmpty(itemId)) return null;
-            if (ItemDatabase.Instance != null) return ItemDatabase.Instance.Find(itemId);
-            return null;
-        }
-
-        private static CropData FindCropById(CropData[] db, string cropId)
-        {
-            if (string.IsNullOrEmpty(cropId)) return null;
-            if (CropDatabase.Instance != null) return CropDatabase.Instance.Find(cropId);
-            if (db != null) foreach (var c in db) if (c != null && c.cropId == cropId) return c;
-            return null;
         }
     }
 
     // -------------------------------------------------------------------------
-    //  CSDL ScriptableObject — dùng để tra cứu khi load save
+    //  CSDL ScriptableObject (dùng để tra cứu khi load save / hiện UI)
     // -------------------------------------------------------------------------
     [CreateAssetMenu(fileName = "CropDatabase", menuName = "Vườn Mơ/Crop Database")]
     public class CropDatabase : ScriptableObject

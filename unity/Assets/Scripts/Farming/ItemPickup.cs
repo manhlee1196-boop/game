@@ -1,170 +1,167 @@
 // ============================================================================
-//  ItemPickup.cs — Vật phẩm nằm dưới đất: nhấp nhô, xoay, bấm E (hoặc auto) để nhặt
+//  ItemPickup.cs — Nông sản nằm dưới đất (sprite pixel 16×16)
 //  Đặt tại: Assets/Scripts/Farming/
-//  Gắn vào: Prefab loot (ví dụ Item_Tomato.prefab có SphereCollider isTrigger)
+//  Gắn vào: Prefab "Loot_Base" (SpriteRenderer + CircleCollider2D isTrigger)
+//
+//  Hành vi:
+//   · Nảy lên theo vòng cung pixel khi vừa rơi ra
+//   · Nhấp nhô 2 khung (bob) để dễ nhận biết
+//   · Người chơi lại gần 1.2 ô -> tự hút về và bay vào túi
 // ============================================================================
 using UnityEngine;
 using VuonMo.Core;
 using VuonMo.Data;
 using VuonMo.InventorySystem;
-using VuonMo.Interaction;
 
 namespace VuonMo.Farming
 {
-    public class ItemPickup : MonoBehaviour, IInteractable
+    public class ItemPickup : MonoBehaviour
     {
-        [Header("Nội dung vật phẩm")]
+        [Header("Nội dung")]
+        [SerializeField] private CropData crop;
         [SerializeField] private ItemData item;
         [SerializeField] private int amount = 1;
         [SerializeField] private CropQuality quality = CropQuality.Normal;
 
-        [Header("Chuyển động")]
-        public float bobHeight = 0.12f;
-        public float bobSpeed = 2.4f;
-        public float spinSpeed = 90f;
-        [Tooltip("Bật: vật phẩm tự bay tới người chơi khi lại gần 3 m.")]
+        [Header("Hiển thị")]
+        public SpriteRenderer spriteRenderer;
+        [Tooltip("Biên độ nhấp nhô (tính bằng pixel; 1 px = 1/16 world unit).")]
+        public float bobPixels = 2f;
+        public float bobSpeed = 4f;
+
+        [Header("Nam châm hút")]
         public bool magnetToPlayer = true;
-        public float magnetRadius = 3f;
-        public float magnetSpeed = 6f;
-        [Tooltip("Tự nhặt sau bao nhiêu giây nằm dưới đất (0 = tắt).")]
+        [Tooltip("Bán kính hút (world unit; 1.2 ≈ 1.2 ô).")]
+        public float magnetRadius = 1.2f;
+        public float magnetSpeed = 7f;
+        [Tooltip("Khoảng cách được coi là đã nhặt.")]
+        public float collectDistance = 0.35f;
+
+        [Header("Tự động")]
+        [Tooltip("Tự vào túi sau bao nhiêu giây nằm dưới đất (0 = tắt).")]
         public float autoCollectDelay = 0f;
 
-        [Header("Vật lý (tuỳ chọn)")]
-        public bool usePhysicsPop = true;
+        [Header("Âm thanh")]
+        public bool playPickupSound = true;
 
         private Vector3 _restPos;
         private float _spawnTime;
-        private Rigidbody _rb;
         private Transform _player;
         private bool _collected;
+        private bool _popping;
+        private Vector3 _popFrom, _popTo;
+        private float _popT, _popDur, _popHeight;
 
         private void Awake()
         {
-            _rb = GetComponent<Rigidbody>();
-            if (_rb != null)
-            {
-                _rb.interpolation = RigidbodyInterpolation.Interpolate;
-                _rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
-            }
+            if (spriteRenderer == null) spriteRenderer = GetComponentInChildren<SpriteRenderer>();
         }
 
         private void Start()
         {
             _spawnTime = Time.time;
-            _restPos = transform.position;
             var pc = GameObject.FindGameObjectWithTag("Player");
             if (pc != null) _player = pc.transform;
 
-            if (autoCollectDelay > 0f)
-                Invoke(nameof(AutoCollect), autoCollectDelay);
+            if (item != null && item.bobInWorld) { /* bob chạy trong Update */ }
+
+            if (autoCollectDelay > 0f || (item != null && item.autoCollectDelay > 0f))
+            {
+                float delay = item != null && item.autoCollectDelay > 0f ? item.autoCollectDelay : autoCollectDelay;
+                Invoke(nameof(Collect), delay);
+            }
         }
 
-        public void Setup(ItemData data, int count, CropQuality q)
+        /// <summary>Gán dữ liệu loot (gọi ngay sau khi Instantiate).</summary>
+        public void Setup(CropData cropData, int count, CropQuality q)
         {
-            item = data;
+            crop = cropData;
+            item = cropData != null ? cropData.harvestItem : null;
             amount = count;
             quality = q;
 
-            // Phẩm chất cao -> thêm hiệu ứng phát sáng
-            if (q != CropQuality.Normal)
+            if (spriteRenderer == null) spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+            if (spriteRenderer != null && crop != null)
             {
-                var light = gameObject.GetComponentInChildren<Light>();
-                if (light == null)
-                {
-                    GameObject glow = new GameObject("QualityGlow");
-                    glow.transform.SetParent(transform, false);
-                    light = glow.AddComponent<Light>();
-                    light.type = LightType.Point;
-                    light.range = 1.2f;
-                    light.intensity = 0.6f;
-                }
-                light.color = q == CropQuality.Gold ? new Color(1f, 0.85f, 0.3f)
-                            : q == CropQuality.Rainbow ? Color.magenta
-                            : new Color(0.8f, 0.9f, 1f);
+                spriteRenderer.sprite = crop.GetHarvestSprite(q);
+                if (spriteRenderer.sprite == null) spriteRenderer.sprite = crop.harvestSprite;
             }
+
+            // Phẩm chất cao: viền sáng pixel (dùng chính sprite glow ở sorting layer trên)
+            if (q != CropQuality.Normal && spriteRenderer != null)
+                spriteRenderer.color = q == CropQuality.Gold ? new Color(1f, 0.95f, 0.75f)
+                                     : q == CropQuality.Rainbow ? new Color(1f, 0.85f, 1f)
+                                     : new Color(0.92f, 0.96f, 1f);
         }
 
-        public void PopUp(Vector3 force)
+        /// <summary>Bắt đầu cú nảy vòng cung (thay cho Rigidbody2D để tiết kiệm vật lý).</summary>
+        public void StartPop(Vector3 from, Vector3 to, float height, float duration)
         {
-            if (!usePhysicsPop || _rb == null)
-            {
-                // Không có Rigidbody: mô phỏng vòng cung bằng code
-                StartCoroutine(SimpleArc());
-                return;
-            }
-            _rb.isKinematic = false;
-            _rb.AddForce(force, ForceMode.Impulse);
-            _rb.AddTorque(Random.insideUnitSphere * 2f, ForceMode.Impulse);
-        }
-
-        private System.Collections.IEnumerator SimpleArc()
-        {
-            Vector3 start = transform.position;
-            Vector3 end = start + new Vector3(Random.Range(-0.6f, 0.6f), 0f, Random.Range(-0.6f, 0.6f));
-            float t = 0f, dur = 0.45f;
-            while (t < dur)
-            {
-                t += Time.deltaTime;
-                float n = t / dur;
-                Vector3 p = Vector3.Lerp(start, end, n);
-                p.y += Mathf.Sin(n * Mathf.PI) * 0.55f;
-                transform.position = p;
-                yield return null;
-            }
-            _restPos = end;
+            _popFrom = from;
+            _popTo = to;
+            _popHeight = height;
+            _popDur = Mathf.Max(0.05f, duration);
+            _popT = 0f;
+            _popping = true;
+            _restPos = to;
         }
 
         private void Update()
         {
             if (_collected) return;
 
-            // Nhấp nhô + xoay (cozy feel)
-            float bob = Mathf.Sin((Time.time - _spawnTime) * bobSpeed) * bobHeight;
-            transform.position = new Vector3(transform.position.x, Mathf.Max(_restPos.y, transform.position.y) + bob * Time.deltaTime * 10f, transform.position.z);
-            transform.Rotate(Vector3.up, spinSpeed * Time.deltaTime, Space.World);
+            // ---- 1) Cú nảy vòng cung ----
+            if (_popping)
+            {
+                _popT += Time.deltaTime;
+                float n = Mathf.Clamp01(_popT / _popDur);
+                Vector3 p = Vector3.Lerp(_popFrom, _popTo, n);
+                p.y += Mathf.Sin(n * Mathf.PI) * _popHeight;      // parabol pixel
+                transform.position = p;
+                if (n >= 1f) { _popping = false; _restPos = _popTo; }
+                return;
+            }
 
-            // Nam châm hút về người chơi
+            // ---- 2) Nhấp nhô 2 khung (bob) ----
+            float bobWorld = (bobPixels / 16f);
+            float bob = Mathf.Sin((Time.time - _spawnTime) * bobSpeed) * bobWorld;
+            transform.position = new Vector3(_restPos.x, _restPos.y + bob, _restPos.z);
+
+            // ---- 3) Nam châm hút người chơi ----
             if (magnetToPlayer && _player != null)
             {
-                float d = Vector3.Distance(transform.position, _player.position);
+                float d = Vector2.Distance(transform.position, _player.position);
                 if (d < magnetRadius)
                 {
-                    transform.position = Vector3.MoveTowards(transform.position, _player.position + Vector3.up * 0.9f, magnetSpeed * Time.deltaTime);
-                    if (d < 0.55f) Collect();
+                    transform.position = Vector3.MoveTowards(transform.position, _player.position, magnetSpeed * Time.deltaTime);
+                    if (Vector2.Distance(transform.position, _player.position) < collectDistance) Collect();
                 }
             }
         }
 
-        private void AutoCollect() => Collect();
-
-        private void Collect()
+        public void Collect()
         {
-            if (_collected || item == null) return;
-            _collected = true;
+            if (_collected) return;
 
-            int leftover = Inventory.Instance != null ? Inventory.Instance.Add(item, amount, quality) : 0;
+            var target = crop != null ? crop.harvestItem : item;
+            if (target == null) { Destroy(gameObject); return; }
+
+            int leftover = Inventory.Instance != null ? Inventory.Instance.Add(target, amount, quality) : amount;
+
             if (leftover > 0)
             {
-                _collected = false;
+                // Túi đầy -> để lại dưới đất và báo
                 if (FloatingText.Instance != null)
-                    FloatingText.Instance.Show("Túi đã đầy!", transform.position, Color.red);
+                    FloatingText.Instance.Show("Túi đầy!", transform.position + Vector3.up * 0.4f, Color.red);
                 return;
             }
 
+            _collected = true;
+            if (playPickupSound && AudioManager.Instance != null) AudioManager.Instance.PlayPickUp();
             if (FloatingText.Instance != null)
-                FloatingText.Instance.Show($"+{amount} {item.displayName}", transform.position, Color.white);
+                FloatingText.Instance.Show($"+{amount}", transform.position + Vector3.up * 0.4f, Color.white);
 
             Destroy(gameObject);
         }
-
-        // ---- IInteractable ----
-        public Transform InteractTransform => transform;
-
-        public string GetPrompt(PlayerInteractor player)
-            => $"[E] Nhặt {item.displayName}{(amount > 1 ? $" x{amount}" : "")} {QualityUtil.Suffix(quality)}";
-
-        public bool CanInteract(PlayerInteractor player) => !_collected;
-
-        public void Interact(PlayerInteractor player) => Collect();
     }
 }

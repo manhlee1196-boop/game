@@ -1,9 +1,18 @@
 // ============================================================================
-//  Enums.cs — Các kiểu dữ liệu dùng chung cho toàn bộ game Vườn Mơ
+//  Enums.cs — Kiểu dữ liệu dùng chung (bản 2D PIXEL)
 //  Đặt tại: Assets/Scripts/Core/
 // ============================================================================
 namespace VuonMo.Core
 {
+    /// <summary>4 hướng nhân vật (pixel art dùng 4 hướng sprite, di chuyển 8 hướng).</summary>
+    public enum Direction
+    {
+        Down = 0,
+        Left = 1,
+        Right = 2,
+        Up = 3
+    }
+
     /// <summary>4 mùa trong năm (mỗi mùa 28 ngày).</summary>
     public enum Season
     {
@@ -16,63 +25,60 @@ namespace VuonMo.Core
     /// <summary>Loại thời tiết. Ảnh hưởng trực tiếp tới cây trồng & gia súc.</summary>
     public enum WeatherType
     {
-        Sunny = 0,      // Nắng
-        Cloudy = 1,     // Nhiều mây
-        Rain = 2,       // Mưa   -> tưới cây miễn phí
-        Storm = 3,      // Bão   -> có thể làm gãy cây
-        Snow = 4,       // Tuyết (chỉ mùa Đông)
-        Fog = 5,        // Sương mù
-        Rainbow = 6,    // Cầu vồng (sau mưa)
-        MeteorShower = 7// Mưa sao băng
+        Sunny = 0,
+        Cloudy = 1,
+        Rain = 2,
+        Storm = 3,
+        Snow = 4,
+        Fog = 5,
+        Rainbow = 6,
+        MeteorShower = 7
     }
 
-    /// <summary>4 giai đoạn sinh trưởng của cây + 2 trạng thái xấu.</summary>
+    /// <summary>4 giai đoạn sinh trưởng + 2 trạng thái xấu (mỗi giai đoạn = 1 sprite).</summary>
     public enum GrowthStage
     {
-        Seed = 0,       // Hạt giống  -> Model 1
-        Sprout = 1,     // Mầm         -> Model 2
-        Mature = 2,     // Trưởng thành-> Model 3
-        Fruiting = 3,   // Có quả (chín)-> Model 4  => có thể thu hoạch
-        Withering = 4,  // Héo (thiếu nước)
-        Dead = 5        // Chết
+        Seed = 0,
+        Sprout = 1,
+        Mature = 2,
+        Fruiting = 3,
+        Withering = 4,
+        Dead = 5
     }
 
-    /// <summary>Công cụ người chơi có thể chọn.</summary>
+    /// <summary>Công cụ người chơi có thể chọn (hotbar).</summary>
     public enum ToolType
     {
         None = 0,
-        Hoe = 1,            // Cuốc
-        WateringCan = 2,    // Bình tưới
-        Sickle = 3,         // Liềm
-        Harvester = 4,      // Máy gặt
-        Axe = 5,            // Rìu
-        Pickaxe = 6,        // Cuốc chim
-        FishingRod = 7,     // Cần câu
-        SeedBag = 8,        // Túi hạt giống
-        Harvest = 9         // Tay không (hái quả)
+        Hoe = 1,
+        WateringCan = 2,
+        Sickle = 3,
+        Axe = 4,
+        Pickaxe = 5,
+        FishingRod = 6,
+        SeedBag = 7
     }
 
     /// <summary>Hạng chất lượng nông sản -> nhân giá.</summary>
     public enum CropQuality
     {
-        Normal = 0,     // x1.0
-        Silver = 1,     // x1.25
-        Gold = 2,       // x1.5
-        Rainbow = 3     // x2.0
+        Normal = 0,
+        Silver = 1,
+        Gold = 2,
+        Rainbow = 3
     }
 
-    /// <summary>Loại ô đất.</summary>
+    /// <summary>Trạng thái ô đất trên lưới.</summary>
     public enum TileState
     {
-        Grass = 0,      // Cỏ hoang
-        Tilled = 1,     // Đã cuốc
-        Planted = 2,    // Có cây
-        Blocked = 3     // Có vật cản / công trình
+        Grass = 0,
+        Tilled = 1,
+        Planted = 2,
+        Blocked = 3
     }
 
     public static class QualityUtil
     {
-        /// <summary>Hệ số giá bán theo phẩm chất.</summary>
         public static float PriceMultiplier(CropQuality q)
         {
             switch (q)
@@ -84,15 +90,50 @@ namespace VuonMo.Core
             }
         }
 
+        /// <summary>Hậu tố hiển thị trên HUD pixel (dùng icon ngôi sao 8×8 trong game).</summary>
         public static string Suffix(CropQuality q)
         {
             switch (q)
             {
-                case CropQuality.Silver: return "★";
-                case CropQuality.Gold: return "★★";
-                case CropQuality.Rainbow: return "★★★";
+                case CropQuality.Silver: return "*";
+                case CropQuality.Gold: return "**";
+                case CropQuality.Rainbow: return "***";
                 default: return "";
             }
+        }
+    }
+
+    public static class DirectionUtil
+    {
+        /// <summary>Vector đơn vị trên lưới (ô 1×1 world unit).</summary>
+        public static UnityEngine.Vector2Int ToCell(Direction d)
+        {
+            switch (d)
+            {
+                case Direction.Up: return new UnityEngine.Vector2Int(0, 1);
+                case Direction.Left: return new UnityEngine.Vector2Int(-1, 0);
+                case Direction.Right: return new UnityEngine.Vector2Int(1, 0);
+                default: return new UnityEngine.Vector2Int(0, -1);
+            }
+        }
+
+        public static UnityEngine.Vector2 ToVector(Direction d)
+        {
+            switch (d)
+            {
+                case Direction.Up: return UnityEngine.Vector2.up;
+                case Direction.Left: return UnityEngine.Vector2.left;
+                case Direction.Right: return UnityEngine.Vector2.right;
+                default: return UnityEngine.Vector2.down;
+            }
+        }
+
+        /// <summary>Chọn hướng sprite từ vector di chuyển (8 hướng -> 4 sprite, chéo vẫn dùng sprite ngang).</summary>
+        public static Direction FromVector(UnityEngine.Vector2 v)
+        {
+            if (UnityEngine.Mathf.Abs(v.x) > UnityEngine.Mathf.Abs(v.y))
+                return v.x > 0f ? Direction.Right : Direction.Left;
+            return v.y > 0f ? Direction.Up : Direction.Down;
         }
     }
 }

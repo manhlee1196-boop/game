@@ -1,263 +1,256 @@
 # GAME DESIGN DOCUMENT (GDD)
-## Dự án: **VƯỜN MƠ** (*Harvest Hearth*) — Cozy 3D Farm Life Sim
+## Dự án: **VƯỜN MƠ** (*Harvest Hearth*) — Cozy 2D Pixel Farm Life Sim
 
 | Thông tin | Chi tiết |
 |---|---|
-| **Tên dự án (working title)** | Vườn Mơ / Harvest Hearth |
-| **Thể loại** | Cozy Life-Sim + Farming Sim + Light Social Sim |
-| **Góc nhìn** | Third-person 3D (over-the-shoulder, camera xoay tự do 360°) |
-| **Engine** | Unity 6 (URP) — bản Unreal Engine 5 nằm ở phụ lục §16 |
-| **Nền tảng** | PC (Steam/Epic) → Nintendo Switch → PS5/Xbox Series → Mobile (cloud/port sau) |
-| **Số người chơi** | 1 người chơi; Co-op 2–4 người (post-launch, kiến trúc chừa sẵn) |
-| **Đối tượng** | 12–40 tuổi, người chơi casual/cozy, fan Animal Crossing + Stardew Valley + Story of Seasons |
+| **Tên dự án** | Vườn Mơ / Harvest Hearth |
+| **Thể loại** | Cozy Life-Sim + Farming Sim + Social Sim |
+| **Góc nhìn** | **2D Top-down pixel art** (nhìn từ trên xuống kiểu Stardew Valley / Harvest Moon) |
+| **Engine** | Unity 6 LTS — **2D (URP 2D Renderer hoặc Built-in 2D)** · Tilemap + Sprite Atlas |
+| **Độ phân giải nội bộ** | **320×180 pixel** (upscale nguyên ×6 = 1920×1080, ×4 = 1280×720) |
+| **Kích thước 1 tile** | **16×16 pixel** = **1 world unit** (Pixels Per Unit = 16) |
+| **Nền tảng** | PC (Steam) → Nintendo Switch → Mobile (port sau) |
+| **Số người chơi** | 1 (co-op 2–4 post-launch, kiến trúc chừa sẵn) |
+| **Đối tượng** | 12–45 tuổi, fan Stardew Valley / Harvest Moon / Animal Crossing |
 | **Xếp hạng** | ESRB E / PEGI 3 |
-| **Thời lượng 1 phiên** | 20–60 phút; 1 mùa in-game ≈ 7.5 giờ thực |
-| **Thời gian phát triển** | 18 tháng (5 sprint lớn) — xem §15 |
+| **Thời lượng phiên** | 20–60 phút · 1 mùa in-game ≈ 7.5 giờ thực |
+| **Thời gian phát triển** | 15 tháng (5 sprint lớn) — xem §15 |
 | **Ngôn ngữ** | VI, EN, JP, ZH, KR, ES, PT-BR, FR |
 
-**USP (điểm bán riêng):**
-1. **Diorama Farm** — trang trại như một mô hình đồ chơi thủ công đặt trong hộp gỗ: low-poly mềm, màu sắc "ấm" (warm), không có chi tiết gây nhiễu.
-2. **Living Grid** — hệ thống lưới đất sống: mỗi ô đất có độ ẩm, dinh dưỡng, cỏ dại và "ký ức mùa vụ" (crop rotation bonus) hiển thị trực quan bằng màu đất.
-3. **Seamless Season Shift** — chuyển mùa mượt trong 8 giây cinematic ngay tại chỗ người chơi đang đứng, không có loading screen.
-4. **Không áp lực** — không có "ngất vì hết năng lượng" kiểu phạt nặng; thất bại chỉ là mất mùa, không mất save.
+**USP:**
+1. **Pixel ấm (Cozy Pixels)** — palette giới hạn 48 màu theo 4 mùa, đổ bóng bằng dithering thủ công, không có pixel "bẩn" lẫn màu hiện đại.
+2. **Living Grid** — ô đất sống: độ ẩm, dinh dưỡng, cỏ dại, ký ức vụ mùa, hiển thị bằng **4 biến thể tile** (cỏ / đất cuốc / đất tưới sẫm / cỏ dại).
+3. **Seamless Season Shift** — chuyển mùa trong 6 giây: tile toàn bản đồ đổi màu + lá/hoa rơi + nhạc chuyển, **không có loading screen**.
+4. **Không áp lực** — thất bại chỉ là mất vụ, không mất save; không combat.
 
 ---
 
 ## 1. TẦM NHÌN & TRỤ CỘT THIẾT KẾ
 
-| # | Trụ cột | Ý nghĩa trong gameplay | Kiểm chứng (test) |
+| # | Trụ cột | Ý nghĩa | Kiểm chứng |
 |---|---|---|---|
-| P1 | **Ấm cúng (Cozy)** | Không timer gây căng thẳng, không combat, nhạc ambient, nhịp chậm | Người chơi có thể ngồi ngắm cảnh 5 phút mà không bị phạt |
-| P2 | **Nhịp điệu thiên nhiên** | Mùa/thời tiết là "designer vô hình" quyết định nên trồng gì | Mỗi mùa có ít nhất 1 cây trồng & 1 sự kiện độc quyền |
-| P3 | **Của tôi / Của chúng ta** | Trang trại và mối quan hệ đều do người chơi xây, không cho sẵn | Không có "đúng/sai", chỉ có lựa chọn thẩm mỹ |
-| P4 | **Mọi thứ đều phản hồi** | Mỗi hành động có âm thanh, animation và phản hồi hình ảnh | 100% tương tác phải có SFX + Animation + VFX |
+| P1 | **Ấm cúng** | Không timer gây căng, nhạc chiptune nhẹ, nhịp chậm | Người chơi ngồi ngắm cảnh 5 phút không bị phạt |
+| P2 | **Nhịp thiên nhiên** | Mùa & thời tiết quyết định nên trồng gì | Mỗi mùa có ≥1 cây & 1 sự kiện độc quyền |
+| P3 | **Của tôi / Của chúng ta** | Trang trại & quan hệ do người chơi dựng | Không có "đúng/sai", chỉ có lựa chọn thẩm mỹ |
+| P4 | **Mọi hành động đều có phản hồi** | Mỗi tương tác có SFX + khung hình animation + hạt bụi/lá | 100% tương tác có 3 lớp phản hồi |
+| P5 | **Pixel sạch** | Không anti-aliasing, không scale lẻ, không pixel rung | Test: chụp ảnh 100%, mọi pixel nằm đúng lưới |
 
 ---
 
-## 2. PHONG CÁCH ĐỒ HỌA 3D (VISUAL STYLE)
+## 2. PHONG CÁCH ĐỒ HỌA PIXEL (VISUAL STYLE)
 
-### 2.1 Định hướng nghệ thuật
+### 2.1 Thông số kỹ thuật nền tảng
 
 | Thuộc tính | Đặc tả |
 |---|---|
-| **Phong cách chính** | **Stylized Low-poly 3D** ("Handcrafted Diorama"): khối hình học đơn giản, mặt phẳng (faceted) hơi lộ cạnh, tỉ lệ đầu-to-thân dễ thương (chibi-lite, đầu ≈ 1/4.5 chiều cao) |
-| **Chất liệu** | Flat/Matte material + roughness cao (0.7–0.9). **Không dùng PBR realistic.** Gỗ, đất sét (clay), vải dệt, gốm sứ là 4 "cảm giác vật liệu" chủ đạo |
-| **Outline** | Có, kiểu "soft outline" 1.5–2 px, **màu nâu tối `#3E2C24`** thay vì đen tuyệt đối → giữ cảm giác ấm |
-| **Ánh sáng** | 1 Directional (mặt trời/mặt trăng) + Hemisphere fill + Light Probe; **không dùng bóng đổ cứng trong hang/chuồng**, chỉ ambient occlusion baked |
-| **Bóng đổ** | Soft shadow, tỉ lệ mềm (shadow blur 0.25–0.4). Bóng nhân vật là **blob shadow** ở chế độ performance thấp |
-| **Post-processing** | Bloom nhẹ (0.15), Color Grading warm (LUT "Golden Hour"), Vignette 0.2, **tắt DOF khi chơi**, bật DOF khi chụp ảnh/Photo Mode |
-| **Camera** | FOV 45–55°, camera thứ ba cao 2.2 m sau lưng 4.5 m, xoay/zoom bằng chuột-phải hoặc gamepad, không va vào vật cản (dùng Camera Collision whitelist) |
-| **Tỉ lệ thế giới** | 1 Unity Unit = 1 mét. Ô đất = **2×2 m**. Người chơi cao 1.7 m. Cửa nhà cao 2.6 m |
-| **Độ phân giải texture** | 256×256 (props nhỏ, atlas) → 1024×1024 (địa hình, building). Dùng **Texture Atlas** + Palette texture 256 màu |
-| **Phong cách UI** | Gỗ + giấy da (paper texture), bo góc 12 px, font **Nunito / Baloo 2** (hỗ trợ tiếng Việt có dấu), icon vẽ tay dạng badge tròn |
+| **Phong cách** | Pixel art 16-bit cao cấp ("modern retro"): viền tối 1 px màu nâu tím `#3B2A33` (KHÔNG dùng đen tuyệt đối), đổ bóng 2 tông kèm dithering 50% |
+| **Độ phân giải sprite cơ bản** | Nhân vật 16×24 px · cây trồng 16×16 (cây leo/ngô 16×32) · công trình 32×32 → 96×96 · túi đồ icon 16×16 |
+| **Tile** | 16×16 px. Bản đồ dùng **Tilemap** + **Rule Tile** (tự nối viền cỏ/đường/nước) |
+| **Palette** | **48 màu tổng**, chia 4 nhóm mùa (mỗi mùa 12 màu chủ đạo + 6 màu dùng chung cho UI/nhân vật) |
+| **Dithering** | Checkerboard 50% cho chuyển sáng-tối, Bayer 4×4 cho bóng cây |
+| **Chống rung** | Pixel Perfect Camera (`PPU = 16`, `Reference Resolution 320×180`, `Upscale Render Texture = ON`, `Pixel Snapping = ON`) |
+| **Camera** | Orthographic, follow nhân vật có dead-zone 2×2 tile, không xoay. Zoom 2 mức: gần (250×140 px vùng nhìn) và xa (400×225) |
+| **Animation** | Nhân vật: 4 hướng × (Idle 2 khung, Walk 4 khung, Run 6 khung, Tool 4 khung) @ 8 fps · Nước/lửa/đèn: 3–4 khung @ 6–8 fps · Cây: 1 sprite/giai đoạn + 2 khung nhấp nháy khi chín |
+| **Bóng đổ** | Ellipse 12×5 px, alpha 35%, KHÔNG đổ bóng realtime |
+| **Ánh sáng** | Chỉ dùng **lớp phủ màu toàn màn hình** (không dùng ánh sáng động) + điểm sáng giả cho đèn lồng/đom đóm |
+| **UI** | Bitmap font 8×8 (hỗ trợ tiếng Việt có dấu — dùng font "Pixel Operator"/"Silkscreen" + bộ dấu vẽ tay), khung gỗ 9-slice 24×24 px |
+| **Giới hạn màn hình** | Tối đa ~400 sprite động cùng lúc; ngoài vùng nhìn → tắt (culling) |
 
-### 2.2 Bảng phối màu (Color Script)
+### 2.2 Bảng màu theo mùa (Color Script)
 
-| Mùa | Bầu trời (Sky) | Ánh nắng (Key light) | Đất / Cỏ | Nước | Accent |
+| Mùa | Trời / nền | Cỏ (3 tông) | Đất | Nước | Accent |
 |---|---|---|---|---|---|
-| **Xuân (Spring)** | `#A8DCF0` | `#FFE9B8` (4000K) | `#9BD07A` / `#7A5230` | `#7FD3E8` | Hồng đào `#F7A8B8` |
-| **Hạ (Summer)** | `#7EC8F2` | `#FFF3C4` (5200K) | `#6FBF57` / `#8A5F33` | `#5FC8E0` | Vàng nắng `#FFD34E` |
-| **Thu (Fall)** | `#C9D6E8` | `#FFC98A` (3600K) | `#C99A4E` / `#7A5230` | `#8FA6A8` | Cam bí `#E5762C` |
-| **Đông (Winter)** | `#C6D6E4` | `#DCE9F5` (6500K) | Tuyết `#F2F7FB` / `#4A3B33` | Đá `#BFE3EE` | Xanh lạnh `#7C9CC4` |
+| **Xuân** | `#7EC0EE` / `#B8E0F0` | `#8FD06B` `#6FBF57` `#4E9A45` | `#8A5F33` `#6E4726` | `#4FA8D8` `#7FD3E8` | Hồng đào `#F7A8B8` |
+| **Hạ** | `#5FB8F0` / `#9FE0FF` | `#6FBF57` `#57A845` `#3E8036` | `#8A5F33` `#6E4726` | `#4FA8D8` `#9FE8F5` | Vàng nắng `#FFD34E` |
+| **Thu** | `#C9D6E8` / `#E8D9C0` | `#C99A4E` `#A87B3C` `#8A6330` | `#7A5230` `#5E3E24` | `#8FA6A8` `#A8BFC0` | Cam bí `#E5762C` |
+| **Đông** | `#C6D6E4` / `#EAF2F8` | `#F2F7FB` `#D6E4F0` `#B8CCDE` | `#4A3B33` `#3A2E28` | `#BFE3EE` `#D8F0F8` | Xanh lạnh `#7C9CC4` |
 
-Quy tắc: **độ tương phản màu tối đa 60%** — không dùng màu bão hòa 100% cho mảng lớn, chỉ dùng cho accent (quả chín, biển hiệu, cá).
+**Quy tắc phối màu:**
+- Mỗi sprite chỉ dùng **tối đa 8 màu** (kể cả viền) → dễ đọc ở 320×180.
+- Vùng tối của màu nào thì **dịch hue về phía tím/xanh** (không chỉ giảm sáng) — đây là "chìa khoá" để pixel art trông ấm mà không bị bùn.
+- Tương phản giá trị (value) tối thiểu 20% giữa lớp nền và lớp vật thể để nhân vật luôn nổi bật.
 
-### 2.3 Chu kỳ ánh sáng ngày/đêm
+### 2.3 Ánh sáng ngày/đêm (lớp phủ)
 
-| Khung giờ game | Trạng thái | Ánh sáng | Gameplay ảnh hưởng |
-|---|---|---|---|
-| 05:00–07:00 | Bình minh | Key 2400K, intensity 0.5→1.1, fog hồng nhạt | Sương mù giảm tầm nhìn xa 40 m; tưới nước được |
-| 07:00–17:00 | Ban ngày | Key 5200K, intensity 1.4, ambient xanh lá | **Người bán hàng mở cửa**, NPC ra ngoài |
-| 17:00–19:30 | Hoàng hôn | Key 3200K, intensity 1.0→0.4, warm LUT | Xuất hiện đom đóm; câu cá cá quý tăng tỉ lệ |
-| 19:30–22:00 | Tối | Moonlight 7000K, intensity 0.25, đèn lồng tự bật | Đa số shop đóng; NPC về nhà; cây trồng ngừng nhận nước |
-| 22:00–02:00 | Đêm khuya | Moonlight 0.15, blue fog | Chỉ còn cú mèo, câu cá đêm, NPC bí ẩn |
-| 02:00–05:00 | (tùy chọn) | — | **Auto-sleep + bảng tổng kết ngày** (doanh thu, thu hoạch, quan hệ) |
+| Khung giờ | Lớp phủ (overlay) | Gameplay ảnh hưởng |
+|---|---|---|
+| 05:00–07:00 Bình minh | `#FFE9B8` alpha 8% | Sương mù giảm tầm nhìn (overlay xám 12%) |
+| 07:00–11:00 Sáng | Alpha 0% | Shop mở, NPC ra đường |
+| 11:00–17:00 Trưa | Alpha 0%, cộng nhẹ vàng 4% | Tốc chạy bình thường |
+| 17:00–20:00 Hoàng hôn | `#FFB066` alpha 20% | Đom đóm xuất hiện, cá quý tăng tỉ lệ |
+| 20:00–23:00 Tối | `#26396E` alpha 55% | Đèn lồng bật, phần lớn shop đóng |
+| 23:00–02:00 Khuya | `#16204A` alpha 68% | NPC về nhà, chỉ còn câu cá đêm |
+| 02:00 | Auto-sleep → bảng tổng kết ngày | — |
 
-> **Quy tắc mềm:** Thức sau 24:00 không bị phạt tiền (khác Stardew); chỉ mất buff "Ngủ đủ giấc" (+10% tốc chạy, +5% chất lượng nông sản ngày hôm sau).
+> Thức sau 24:00 **không bị phạt tiền**; chỉ mất buff "Ngủ đủ giấc" (+5% chất lượng nông sản hôm sau).
 
 ---
 
 ## 3. VÒNG LẶP GAMEPLAY CHÍNH (CORE LOOP)
 
-### 3.1 Vòng lặp theo nhịp thời gian
-
 | Vòng lặp | Thời lượng | Hành động | Phần thưởng |
 |---|---|---|---|
-| **Micro (5–30 giây)** | Liên tục | Tới ô đất → tưới/thu hoạch → nhặt loot → xem hạt bay | +1 nông sản, +XP Farming |
-| **Meso (1 ngày game ~16 phút thực)** | 1 chu kỳ sáng-tối | Tưới cây, cho gia súc ăn, hái trứng/sữa, giao hàng, nói chuyện NPC | Tiền, quan hệ +, hạt giống mới |
-| **Macro (1 mùa ~7.5 giờ thực)** | 28 ngày | Gieo vụ mùa, xây chuồng, mở khóa công trình, hoàn thành nhiệm vụ cộng đồng | Mở vùng mới, mở công thức chế biến |
-| **Meta (1 năm = 4 mùa)** | ~30 giờ thực | Cải tạo trang trại, kết hôn/kết bạn, hoàn thành Lễ hội năm, đạt danh hiệu | Ending mùa nở hoa + New Game+ |
-
-### 3.2 Sơ đồ Core Loop (dạng chuỗi phễu)
+| **Micro** | 5–30 giây | Đi tới ô đất → cuốc/tưới/thu hoạch → nhặt loot → xem chữ "+3" bay lên | +nông sản, +XP |
+| **Meso** | 1 ngày game (~16 phút thực) | Tưới cây, cho gia súc ăn, hái trứng/sữa, nói chuyện NPC, mua bán | Tiền, tim NPC, hạt mới |
+| **Macro** | 1 mùa (28 ngày ≈ 7.5 giờ) | Gieo vụ mùa, xây chuồng, mở công trình, quest cộng đồng | Mở vùng mới, công thức mới |
+| **Meta** | 1 năm (4 mùa ≈ 30 giờ) | Cải tạo trang trại, kết bạn/kết hôn, hoàn thành lễ hội năm | Ending mùa nở hoa + New Game+ |
 
 ```
- ┌──────────────────────────── VÒNG LẶP MỘT NGÀY ────────────────────────────┐
- │                                                                           │
- │  1. Thức dậy (bảng tổng kết)                                              │
- │        ↓                                                                  │
- │  2. Kiểm tra thời tiết & mùa  ──► quyết định hôm nay trồng/tưới gì         │
- │        ↓                                                                  │
- │  3. Ra đồng: CUỐC (xới đất) → GIEO HẠT → TƯỚI NƯỚC → BÓN PHÂN             │
- │        ↓                                                                  │
- │  4. Chăn nuôi: cho ăn → vuốt ve → thu TRỨNG/SỮA/LÔNG                       │
- │        ↓                                                                  │
- │  5. THU HOẠCH (cây chín) → tự động nhặt loot vào túi                      │
- │        ↓                                                                  │
- │  6. CHẾ BIẾN (bếp/xưởng): Sữa → Phô mai; Cà chua → Sốt cà; Hoa → Mật ong   │
- │        ↓                                                                  │
- │  7. GIAO THƯƠNG: bán ở Chợ / bán cho NPC / đóng thùng vận chuyển           │
- │        ↓                                                                  │
- │  8. XÃ HỘI: tặng quà, làm nhiệm vụ phụ, hẹn hò, dự lễ hội                 │
- │        ↓                                                                  │
- │  9. MỞ RỘNG TRANG TRẠI: mua ô đất, xây chuồng, mua máy móc, đổi nội thất   │
- │        ↓                                                                  │
- │  10. Ngủ → bảng tổng kết → NGÀY MỚI                                       │
- └───────────────────────────────────────────────────────────────────────────┘
+┌──────────────── VÒNG LẶP MỘT NGÀY ────────────────┐
+│ 1. Thức dậy → bảng tổng kết ngày                  │
+│ 2. Xem thời tiết & mùa (góc phải HUD)             │
+│ 3. Ra ruộng: CUỐC → GIEO → TƯỚI → BÓN PHÂN        │
+│ 4. Chăn nuôi: cho ăn → vuốt ve → thu trứng/sữa    │
+│ 5. THU HOẠCH (cây chín nhấp nháy) → nhặt loot     │
+│ 6. CHẾ BIẾN (bếp/xưởng)                           │
+│ 7. BÁN ở chợ / giao hàng / thùng vận chuyển       │
+│ 8. XÃ HỘI: tặng quà, quest, lễ hội                │
+│ 9. MỞ RỘNG: mua đất, xây chuồng, nâng cấp         │
+│ 10. Ngủ (tự lưu) → NGÀY MỚI                       │
+└───────────────────────────────────────────────────┘
 ```
 
-### 3.3 "Câu chuyện 30 phút đầu" (First-Time User Experience)
+### "Câu chuyện 30 phút đầu"
 
 | Phút | Trải nghiệm |
 |---|---|
-| 0–2 | Cảnh mở: xe tải chở người chơi tới thung lũng; ông ngoại qua đời để lại mảnh đất + 1 cuốc + 1 bình tưới + 3 túi hạt cà chua |
-| 2–5 | Hướng dẫn di chuyển WASD + camera chuột phải, dạy tương tác bằng **E** |
-| 5–10 | Dạy: cuốc đất → gieo hạt → tưới nước. Cây cà chua đầu tiên mọc sau **1 ngày game**, "chín nhanh" đặc biệt để tạo dopamine |
-| 10–15 | Gặp **bà Hòa** (chủ tiệm tạp hóa) — tặng 20G và 5 hạt cải; mở hệ thống Shop |
-| 15–25 | Thu hoạch cà chua đầu tiên → bán được 35G → mua túi hạt mới + dạy "Sleep to save" |
-| 25–30 | Ngày 2: thời tiết chuyển mưa → dạy "mưa tưới cây miễn phí" → mở bản đồ + mở cửa hầm mỏ |
+| 0–2 | Cutscene pixel: xe tải chở người chơi tới thung lũng; ông ngoại để lại mảnh đất + cuốc + bình tưới + 3 hạt cà chua |
+| 2–5 | Dạy WASD di chuyển (8 hướng), phím **E** tương tác — đúng "ô trước mặt" có khung nhấp nháy chỉ ô đang nhắm |
+| 5–10 | Cuốc → gieo → tưới. Cây cà chua đầu tiên mọc chỉ sau 1 ngày game (fast-track để tạo dopamine) |
+| 10–15 | Gặp **bà Hòa**, nhận 20G + 5 hạt cải, mở shop |
+| 15–25 | Thu hoạch đầu tiên → bán 35G → mua hạt mới → dạy "ngủ để lưu" |
+| 25–30 | Ngày 2: mưa → dạy "mưa tưới miễn phí" → mở bản đồ + mở hầm mỏ |
 
 ---
 
 ## 4. HỆ THỐNG TRỒNG TRỌT (FARMING)
 
-### 4.1 Chu kỳ sinh trưởng chuẩn (4 giai đoạn)
+### 4.1 Chu kỳ sinh trưởng — 4 giai đoạn = 4 SPRITE
 
-| Giai đoạn | Tên | Mô hình 3D | Biểu hiện | Chi phí | Điều kiện chuyển tiếp |
-|---|---|---|---|---|---|
-| **GĐ 1** | `Seed` — Hạt giống | `Mound_Seeded` (đống đất nhỏ + 3 hạt nhô lên) | Đất sẫm màu, có icon 💧 nếu khô | 1 hạt giống | Cần **≥1 ngày có nước** |
-| **GĐ 2** | `Sprout` — Mầm | `Sprout_01` (2 lá mầm, 8–14 tri) | Lá lay nhẹ theo gió (wind shader) | — | Cần **N ngày có nước** (N theo cây) |
-| **GĐ 3** | `Mature` — Cây trưởng thành | `Plant_Adult` (thân + tán lá đầy đủ, 150–400 tri) | Có quả non màu xanh nhạt | — | Cần **M ngày có nước** |
-| **GĐ 4** | `Fruiting` — Có quả (CHÍN) | `Plant_Fruitful` (quả phồng + đường viền glow nhẹ) | Quả đổi màu sang accent, **nhấp nháy nhẹ 0.5 Hz**, có icon ❗ trên đầu | — | Người chơi bấm **E** để thu hoạch |
-
-Sau thu hoạch: nếu cây là **Regrow** (cà chua, dâu, ớt, cà tím) → quay lại GĐ 3 và đếm lại `regrowDays`; nếu là **Single-harvest** (củ cải, bí, lúa) → về GĐ 1 và xóa, để lại "dư lượng đất" (soil memory).
-
-### 4.2 Cây trồng khởi đầu (bảng cân bằng)
-
-| Cây | Mùa | Ngày mọc (mỗi GĐ) | Tổng ngày | Regrow | Nước/ngày | Bán gốc | Bán chế biến | Hạt |
-|---|---|---|---|---|---|---|---|---|
-| Củ cải (Turnip) | Xuân | 1 / 1 / 1 | 3 | ✖ | 1 | 35G | 120G (Củ cải muối) | 20G |
-| Khoai tây | Xuân | 1 / 2 / 2 | 5 | ✖ | 1 | 60G | 190G (Khoai chiên) | 50G |
-| **Cà chua** | Hạ | 1 / 2 / 3 | 6 | ✔ 2 ngày | 1 | 55G | 210G (Sốt cà) | 45G |
-| Ngô | Hạ | 2 / 3 / 4 | 9 | ✔ 3 ngày | 2 | 80G | 300G (Bắp rang bơ) | 70G |
-| Bí ngô | Thu | 2 / 4 / 4 | 10 | ✖ | 2 | 200G | 620G (Bánh bí) | 130G |
-| Nho | Thu | 2 / 3 / 5 | 10 | ✔ 4 ngày | 2 | 110G | 380G (Rượu nho) | 100G |
-| Bông tuyết (Snowberry) | Đông | 3 / 4 / 3 | 10 | ✔ 5 ngày | 1 (+nhà kính) | 150G | 450G (Trà tuyết) | 180G |
-| Lúa nước | Hạ | 2 / 3 / 5 | 10 | ✖ | 3 (ngập) | 95G | 340G (Rượu gạo) | 60G |
-
-**Công thức tăng trưởng (dùng cho code & cân bằng):**
-```
-Tổng ngày game để chín = Σ (daysPerStage[i])
-Mỗi ngày, cây chỉ được cộng "ngày ẩm" nếu:
-    soilMoisture ≥ 30%  HOẶC  (thời tiết = Rain/Storm)  HOẶC  (tưới nước trong ngày)
-Cây bị khô > 2 ngày liên tiếp → chuyển sang trạng thái Withering (héo)
-Cây héo > 3 ngày liên tiếp → chết (Dead) → cuốc lên để lấy lại ô đất, mất hạt
-```
-
-### 4.3 Chất lượng nông sản (Quality)
-
-| Hạng | Điều kiện | Giá | Visual |
+| Giai đoạn | Sprite | Biểu hiện pixel | Điều kiện chuyển tiếp |
 |---|---|---|---|
-| Thường | Mặc định | ×1.0 | Không hiệu ứng |
-| Bạc ★ | Bón phân cơ bản + tưới đủ 100% | ×1.25 | Lấp lánh bạc |
-| Vàng ★★ | Phân hữu cơ + đất ≥80% dinh dưỡng + không bị sâu | ×1.5 | Vòng sáng vàng |
-| Cầu vồng ★★★ | Thời tiết mưa nắng xen kẽ + buff ngủ đủ + may mắn ngày | ×2.0 | Cầu vồng bay quanh |
+| **GĐ1 Seed** | `crop_seed` (16×16: 3 hạt nhô khỏi đất) | Đất có 3 chấm sẫm | Cần ≥1 ngày có nước |
+| **GĐ2 Sprout** | `crop_sprout` (2 lá mầm, 8–12 px cao) | Lay nhẹ theo gió (2 khung, 2 fps) | Cần N ngày có nước |
+| **GĐ3 Mature** | `crop_adult` (thân + tán lá) | Có quả non xanh nhạt | Cần M ngày có nước |
+| **GĐ4 Fruiting** | `crop_ripe` (quả đổi màu accent) | **Nhấp nháy `crop_glow` 2 khung @ 1.6 Hz** + icon ❗ trên đầu | Người chơi bấm **E** |
+
+Sau thu hoạch: cây **Regrow** (cà chua, dâu, ớt) → về GĐ3 rồi đếm lại; cây **Single-harvest** (củ cải, bí, lúa) → biến mất, ô đất còn lại "dư lượng" (nutrient −5%).
+
+### 4.2 Cây trồng khởi đầu (cân bằng)
+
+| Cây | Mùa | Ngày mỗi GĐ | Tổng ngày | Regrow | Nước/ngày | Bán gốc | Bán chế biến | Hạt |
+|---|---|---|---|---|---|---|---|---|
+| Củ cải | Xuân | 1/1/1 | 3 | ✖ | 1 | 35G | 120G | 20G |
+| Khoai tây | Xuân | 1/2/2 | 5 | ✖ | 1 | 60G | 190G | 50G |
+| **Cà chua** | Hạ | 1/2/3 | 6 | ✔ 2 ngày | 1 | 55G | 210G | 45G |
+| Ngô | Hạ | 2/3/4 | 9 | ✔ 3 ngày | 2 | 80G | 300G | 70G |
+| Bí ngô | Thu | 2/4/4 | 10 | ✖ | 2 | 200G | 620G | 130G |
+| Nho | Thu | 2/3/5 | 10 | ✔ 4 ngày | 2 | 110G | 380G | 100G |
+| Bông tuyết | Đông | 3/4/3 | 10 | ✔ 5 ngày | 1 (nhà kính) | 150G | 450G | 180G |
+| Lúa nước | Hạ | 2/3/5 | 10 | ✖ | 3 (ngập) | 95G | 340G | 60G |
+
+```
+Tổng ngày chín = Σ daysPerStage
+Mỗi ngày chỉ +1 "ngày ẩm" nếu: đất ẩm ≥ 30% HOẶC mưa/bão HOẶC vừa tưới
+Khô > 2 ngày liên tiếp → Withering (héo, cứu được)
+Khô > 5 ngày liên tiếp → Dead (chỉ cuốc bỏ, mất hạt)
+```
+
+### 4.3 Chất lượng nông sản
+
+| Hạng | Điều kiện | Giá | Sprite loot |
+|---|---|---|---|
+| Thường | Mặc định | ×1.0 | `item_x` |
+| Bạc ★ | Bón phân cơ bản + tưới đủ | ×1.25 | `item_x_silver` (viền xám sáng) |
+| Vàng ★★ | Phân hữu cơ + đất ≥80% dinh dưỡng | ×1.5 | `item_x_gold` (viền vàng + hạt sáng 2 khung) |
+| Cầu vồng ★★★ | Mưa-nắng xen kẽ + buff ngủ + may mắn | ×2.0 | `item_x_rainbow` (2 khung, đổi màu hue-shift) |
 
 ### 4.4 Cơ chế đất (Soil)
 
-| Chỉ số | Giá trị | Ảnh hưởng |
-|---|---|---|
-| **Độ ẩm** | 0–100% | <30% = cây không lớn; tưới +40%; mưa = 100% |
-| **Dinh dưỡng** | 0–100% | Giảm 5%/vụ; phân bón +30%; ảnh hưởng chất lượng |
-| **Cỏ dại** | 0–3 cấp | Xuất hiện 4%/ngày; giảm 15% tốc độ lớn mỗi cấp; dùng cuốc để dọn |
-| **Sâu bệnh** | Có/Không | Xuất hiện 2%/ngày khi dinh dưỡng <40%; dùng thuốc để xử lý |
-| **Ký ức vụ mùa** | Ghi 2 vụ trước | Trồng luân canh khác họ → +10% tốc độ, +10% chất lượng |
+| Chỉ số | Giá trị | Ảnh hưởng | Hiển thị |
+|---|---|---|---|
+| Độ ẩm | 0–100% | <30% cây ngừng lớn; tưới +40%; mưa 100% | Tile tưới sẫm màu hơn + vài giọt nước 2 khung |
+| Dinh dưỡng | 0–100% | −5%/vụ; phân +30%; ảnh hưởng phẩm chất | Không hiện (xem ở UI khi đứng trên ô) |
+| Cỏ dại | 0–3 | −15% tốc độ lớn/cấp | Sprite cỏ dại trên lớp decor |
+| Sâu bệnh | Có/Không | Giảm chất lượng 1 bậc | Sprite con bọ 2 khung |
+| Ký ức vụ mùa | 2 vụ trước | Luân canh khác họ → +10% tốc độ & chất lượng | Icon nhỏ ở UI ô đất |
 
 ---
 
 ## 5. HỆ THỐNG CHĂN NUÔI (ANIMALS)
 
-| Vật nuôi | Chuồng | Mua | Thức ăn | Sản phẩm | Chu kỳ | Quan hệ | Điều kiện đặc biệt |
-|---|---|---|---|---|---|---|---|
-| Gà | Chicken Coop (3 cấp) | 400G | Hạt ngũ cốc, cỏ | Trứng → Trứng vàng | 1/ngày | ♥0–10 | Gà vàng khi ♥10 + blessing |
-| Vịt | Coop | 800G | Ngũ cốc | Trứng vịt → Lông vịt | 1/2 ngày | ♥0–10 | Thích mưa: +1 sản phẩm khi mưa |
-| Bò | Barn | 1.500G | Cỏ khô, Silage | Sữa → Phô mai lớn | 1/ngày | ♥0–10 | Sữa vàng khi ăn cỏ tươi ngoài trời |
-| Dê | Barn | 1.200G | Cỏ | Sữa dê → Phô mai dê | 1/2 ngày | ♥0–10 | Cho sữa nhiều hơn khi được vuốt ve |
-| Cừu | Barn | 1.000G | Cỏ | Len → Vải | 1/5 ngày | ♥0–10 | Nhung khi được chải lông |
-| Ong | Bee House | 250G | Hoa gần đó | Mật ong → Tổ ong | 1/4 ngày | — | Cần ≥5 ô hoa trong bán kính 6 m; **ngừng hoạt động mùa Đông** |
-| Mèo/Chó | Nhà | 300G | Hạt thú cưng | Nước, +1 may mắn/ngày | 1/ngày | ♥0–10 | Mèo đuổi chim ăn hạt; chó nhặt loot hộ |
+| Vật nuôi | Chuồng | Mua | Thức ăn | Sản phẩm | Chu kỳ | Sprite |
+|---|---|---|---|---|---|---|
+| Gà | Coop | 400G | Hạt, cỏ | Trứng → Trứng vàng | 1/ngày | 16×16, 4 hướng + mổ/Eat |
+| Vịt | Coop | 800G | Ngũ cốc | Trứng vịt → Lông | 1/2 ngày | Thêm khung bơi trên nước |
+| Bò | Barn | 1.500G | Cỏ khô | Sữa → Phô mai | 1/ngày | 24×32, nhai cỏ 4 khung |
+| Dê | Barn | 1.200G | Cỏ | Sữa dê | 1/2 ngày | 20×24 |
+| Cừu | Barn | 1.000G | Cỏ | Len → Vải | 1/5 ngày | **2 phiên bản sprite: có lông / đã cắt** |
+| Ong | Bee House | 250G | Hoa gần đó | Mật → Tổ ong | 1/4 ngày | Hạt vàng bay vòng (8 khung) |
+| Mèo/Chó | Nhà | 300G | Hạt thú cưng | +1 may mắn/ngày | 1/ngày | 16×16, ngồi/ngủ/đuôi vẫy |
 
-**Cơ chế chung:** `Đói (Hunger)` giảm 25%/ngày; đói → tụt quan hệ 5%/ngày; ≥♥8 → có biến thể sản phẩm quý. Mùa Đông: gia súc không ra ngoài, cần lò sưởi trong chuồng (mua 500G/lò, giảm 50% sụt quan hệ).
+**Cơ chế chung:** đói tăng 25%/ngày; đói → tụt tim 5%/ngày; ≥♥8 → biến thể sản phẩm quý. Mùa Đông cần lò sưởi trong chuồng (500G, giảm 50% sụt tim). Gia súc ra ngoài ban ngày theo đường đi tự do (đơn giản: lang thang trong bán kính 5 tile quanh chuồng), tự về khi trời mưa/bão/tuyết.
 
 ---
 
 ## 6. CHẾ BIẾN & CHẾ TÁC (CRAFTING)
 
-| Trạm | Mở khóa | Công thức mẫu | Thời gian | Đầu vào → Đầu ra |
+| Trạm | Mở khóa | Công thức mẫu | Thời gian | Vào → Ra |
 |---|---|---|---|---|
-| **Bếp (Kitchen)** | Nâng cấp nhà lần 1 (10.000G) | Sốt cà, Bắp rang bơ, Bánh bí, Trà tuyết | 1–3 giờ game | 1 Cà chua → 1 Sốt cà |
-| **Xưởng chế biến (Artisan)** | 5.000G | Phô mai, Bơ, Rượu nho, Rượu gạo, Dưa chua | 4–12 giờ game | 1 Sữa → 1 Phô mai |
-| **Máy dệt (Loom)** | 3.000G | Vải từ Len | 3 giờ | 1 Len → 1 Vải |
-| **Máy ép dầu** | 2.500G | Dầu, Nước hoa, Xà phòng | 6 giờ | 5 Hoa → 1 Nước hoa |
-| **Xưởng mộc** | 4.000G | Hàng rào, Cầu, Thuyền, Nội thất | 8 giờ | 10 Gỗ + 5 Đá |
-| **Máy ủ (Preserve Jar)** | 2.000G | Mứt, Rượu, Nước ép | 24 giờ game | 1 quả → 1 mứt |
+| Bếp | Nâng nhà 1 (10.000G) | Sốt cà, Bắp rang, Bánh bí, Trà tuyết | 1–3 giờ game | 1 Cà chua → 1 Sốt cà |
+| Xưởng chế biến | 5.000G | Phô mai, Bơ, Rượu nho, Rượu gạo | 4–12 giờ | 1 Sữa → 1 Phô mai |
+| Máy dệt | 3.000G | Vải từ Len | 3 giờ | 1 Len → 1 Vải |
+| Máy ép dầu | 2.500G | Dầu, Nước hoa, Xà phòng | 6 giờ | 5 Hoa → 1 Nước hoa |
+| Xưởng mộc | 4.000G | Hàng rào, Cầu, Nội thất | 8 giờ | 10 Gỗ + 5 Đá |
+| Máy ủ | 2.000G | Mứt, Rượu, Nước ép | 24 giờ | 1 quả → 1 mứt |
 
-Bảng cân bằng: **chế biến luôn cho ×1.5 đến ×5 giá gốc**, đổi lại cần thời gian (bị chặn theo ngày game) — tạo động lực quay lại mỗi sáng.
+Định luật cân bằng: **chế biến cho ×1.5–×5 giá gốc**, đổi lại tốn thời gian trong ngày game → tạo động lực quay lại mỗi sáng.
 
 ---
 
-## 7. HỆ THỐNG TƯƠNG TÁC & DI CHUYỂN 3D
+## 7. HỆ THỐNG TƯƠNG TÁC 2D & GRID
 
-### 7.1 Di chuyển nhân vật (Third-person)
+### 7.1 Di chuyển nhân vật (top-down 8 hướng, sprite 4 hướng)
 
-| Hành động | Input (PC / Gamepad) | Thông số |
+| Hành động | Input | Thông số |
 |---|---|---|
-| Đi bộ | WASD / Left Stick | 3.0 m/s |
-| Chạy | Shift / L3 | 5.6 m/s (tiêu hao stamina) |
-| Nhảy (thấp) | Space / A | Cao 0.9 m, chỉ để vượt hàng rào thấp |
-| Cuộn camera | Chuột phải kéo / R-Stick | Yaw 360°, Pitch −20°…+45° |
-| Zoom | Scroll / D-Pad | 3 m → 12 m |
-| Chụp ảnh (Photo Mode) | P | Đóng băng thế giới, có filter mùa |
-| Tương tác | **E** / Ⓐ | Raycast xa 3 m, phễu 25° |
-| Đổi công cụ | 1–5 hoặc Q/RB | Radial menu khi giữ |
-| Mở túi | Tab / Start | — |
-| Bản đồ | M / Back | — |
+| Đi bộ | WASD / Left Stick | 4.5 tile/giây (≈ 4.5 world unit/s) |
+| Chạy | Shift / L3 | 6.8 tile/giây |
+| Nhảy | — | **Không có nhảy** (2D top-down không cần) |
+| Tương tác | **E** / Ⓐ | Nhắm **ô lưới ngay trước mặt** (không dùng chuột) |
+| Đổi công cụ | 1–6, 8 / D-Pad | Hotbar 8 ô dưới màn hình |
+| Túi đồ | Tab / Start | 48 ô → mở rộng 96 |
+| Bản đồ | M / Back | Minimap góc trên-trái (madness 32×32 px) |
+| Pause | Esc | Dừng thời gian game |
+| Chụp ảnh | P | Giấu HUD, giữ nguyên pixel |
 
-Animation: `Idle_Breathe`, `Walk_Root`, `Run`, `Jump_Start/Loop/Land`, `Hoe_Swing`, `Water_Pour`, `Harvest_Pluck`, `Plant_Kneel`, `Pet_Animal`, `Sit`, `Sleep`, `Emote_Wave/Cheer/Think` — **tổng 14 clip locomotion + 12 clip hành động**, blend bằng Animator Layer (Upper-body override).
+**Animation nhân vật:** Idle (2 khung, 4 hướng) · Walk (4 khung, 4 hướng, 8 fps) · Run (6 khung) · Watering (4 khung) · Hoe (4 khung) · Harvest (3 khung) · Fish (8 khung) · Sit (2 khung) · Sleep (2 khung) — **tổng 46 sprite sheet frame**.
 
-### 7.2 Sử dụng công cụ trong không gian 3D
+### 7.2 Công cụ & tương tác theo ô lưới
 
-| Công cụ | Phím | Animation | Cơ chế 3D | VFX/SFX |
-|---|---|---|---|---|
-| **Cuốc (Hoe)** | 1 | 3 pha: vung → chạm đất → rút | Spherecast xuống từ tâm ô → tìm `FarmTile` trong 1.5 m; đập đất → `Tiled` | Bụi đất, âm "bộp" khô |
-| **Bình tưới (Watering Can)** | 2 | Nghiêng bình 0.6 s | Phễu 45° trước mặt, bán kính 1.8 m; mỗi ô +40% ẩm; hết nước ở giếng | Particle nước + cầu vồng mini khi nắng |
-| **Máy gặt / Liềm (Harvester)** | 3 | Gạt ngang | Vùng 2×1 ô; thu hoạch tối đa 4 cây/lần; giảm 1 XL gốc | Lưỡi xoay, tiếng "xoẹt" |
-| **Rìu (Axe)** | 4 | 2 pha | Phá cây, gốc, hàng rào gỗ (HP riêng từng loại) | Dăm gỗ |
-| **Cần câu (Rod)** | 5 | Cast → Hook → Reel (mini-game 3 bước) | Sphere vùng nước, minigame thanh lực 3 giây | Nước bắn, cá quẫy |
-| **Chuột giống (Seed Bag)** | tự động khi chọn hạt | Quỳ gieo | Chỉ hoạt động trên ô `Tiled` & trống & đúng mùa | Đất rắc, hạt nảy |
-| **Máy cày (Tractor)** ⭐ | mua 20.000G | Lái (đổi state) | Xới + gieo + thu hoạch hàng loạt trong 1 lượt, tốn xăng | Động cơ, khói |
-| **Máy bay phun thuốc** ⭐ | 45.000G | Bay theo lộ trình | Tưới/bón toàn bộ khu vực 10×10 | Cánh quạt, sương |
+| Công cụ | Phím | Hiệu ứng | Vùng tác dụng |
+|---|---|---|---|
+| Cuốc | 1 | Vung 4 khung, hạt đất bắn 3 px | 1 ô trước mặt |
+| Bình tưới | 2 | Nghiêng bình, giọt nước 3 khung, cầu vồng mini khi nắng | 1 ô (nâng cấp: 3×3) |
+| Liềm | 3 | Gạt ngang | 1 ô (cắt cỏ, thu hoạch cây hạt) |
+| Rìu | 4 | 2 khung luân phiên | 1 ô (cây, gốc, hàng rào) |
+| Cuốc chim | 5 | Vung mạnh | Đá, quặng trong mỏ |
+| Cần câu | 6 | Cast → minigame thanh lực 8-bit | Vùng nước gần nhất |
+| Túi hạt | 8/Q | Quỳ gieo, 3 khung | 1 ô đất đã cuốc |
+| Máy gặt ⭐ | mua 20.000G | Lái, thu 2×1 ô/lần | Hàng loạt, tốn xăng |
+| Máy cày ⭐ | 45.000G | Xới + gieo hàng loạt | 10×10 ô theo lộ trình |
 
-### 7.3 Grid System (đặt cây & công trình)
+### 7.3 Grid System 2D
 
 | Thông số | Giá trị |
 |---|---|
-| Kích thước ô | **2×2 m** (`FarmTile` = 1 cell) |
-| Ma trận vùng farm | Tối đa **120 × 120 ô** (240×240 m), chia tilemap 16×16 cho streaming |
-| Đặt công trình | Chỉ snap vào **vùng lưới xây dựng (Build Zone)** đã mở khóa; công trình chiếm N×M ô (barn = 4×6) |
-| Snap | 0.1 s ease → vị trí lưới; preview xanh (hợp lệ) / đỏ (xung đột) + hiện lưới mờ |
-| Cây trồng | Chỉ 1 cây/1 ô; cây lớn (cây ăn quả) chiếm 3×3 |
-| Xoay | Q/E hoặc chuột phải, snap 90° |
-| Va chạm | Mỗi ô có `NavCost` để NPC tìm đường tránh luống cây |
+| Kích thước ô | **1 × 1 world unit** = 16×16 px = 1 tile |
+| Bản đồ | Tối đa **200×200 ô** (3.200×3.200 px), chia 4 khu vực để culling |
+| Tilemap layer | `Ground` (cỏ/đường/nước) · `Soil` (đất nông nghiệp) · `Decor` (cỏ dại, hoa, vật rơi) · `Building` · `Collision` |
+| Rule Tile | Cỏ, đường đất, nước, bờ biển tự nối viền |
+| Đặt công trình | Snap theo ô, footprint N×M (Barn 3×4 ô), preview **xanh lá 60% alpha / đỏ 60% alpha** |
+| Va chạm | BoxCollider2D trên layer `Collision` + `CompositeCollider2D` gộp lại (giảm số collider) |
+| Y-sorting | `sortingOrder = -round(y × 100)` để nhân vật đi sau cây bị che đúng |
 
 ---
 
@@ -265,121 +258,124 @@ Animation: `Idle_Breathe`, `Walk_Root`, `Run`, `Jump_Start/Loop/Land`, `Hoe_Swin
 
 ### 8.1 Bảng mùa
 
-| Mùa | Ngày | Nhiệt độ | Màu chủ đạo | Cây trồng được | Sự kiện đặc biệt |
+| Mùa | Ngày | Màu chủ đạo | Cây trồng được | Sự kiện |
+|---|---|---|---|---|
+| Xuân | 1–28 | Xanh non, hồng | Củ cải, Khoai tây, Dâu, Hành | Lễ Hoa Nở (13) |
+| Hạ | 29–56 | Xanh đậm, vàng | Cà chua, Ngô, Lúa, Dưa hấu | Hội Chợ Biển (40) |
+| Thu | 57–84 | Cam, nâu gạch | Bí ngô, Nho, Cà rốt, Táo | Lễ Đèn Lồng (70) |
+| Đông | 85–112 | Trắng, xanh lạnh | Bông tuyết, cải nhà kính | Lễ Tri Ân (98) |
+
+**Cách đổi mùa (không loading):** đổi `SeasonTheme` → tilemap đổi tile cỏ → particles (hoa anh đào/lá vàng/tuyết) → nhạc → overlay tint. Toàn bộ trong **6 giây**.
+
+### 8.2 Thời tiết & ảnh hưởng
+
+| Thời tiết | Tỉ lệ | Cây trồng | Gia súc | Người chơi | Hình ảnh pixel |
 |---|---|---|---|---|---|
-| Xuân | 1–28 | 18–24°C | Xanh non, hồng | Turnip, Khoai tây, Dâu, Hành | Lễ Hoa Nở (ngày 13) |
-| Hạ | 29–56 | 28–34°C | Xanh đậm, vàng | Cà chua, Ngô, Lúa, Dưa hấu | Hội Chợ Biển (ngày 40) |
-| Thu | 57–84 | 15–22°C | Cam, đỏ gạch | Bí ngô, Nho, Cà rốt, Táo | Lễ Đèn Lồng (ngày 70) |
-| Đông | 85–112 | −5–8°C | Trắng, xanh lạnh | Snowberry, cải trong nhà kính | Lễ Tuyết & Tri Ân (ngày 98) |
+| **Nắng** | 45% | +5% tốc độ lớn | Ra ngoài, +5% tim | Bình thường | Overlay vàng nhẹ 4%, đom đóm ban đêm |
+| **Nhiều mây** | 20% | Bình thường | Bình thường | Bình thường | Overlay xám 6% |
+| **Mưa** | 18% | **Tự tưới 100%**, +10% tốc | Bò/vịt +1 sản phẩm; gà −2 tim | −8% tốc chạy | Hạt mưa 3 khung + gợn nước 4 khung trên ô đất |
+| **Bão** | 5% | **10% cây gãy** | Không ra ngoài, −5 tim nếu chuồng chưa nâng | Cấm câu cá | Mưa xiên + lá bay + **sét nháy trắng 2 khung** + camera rung 1.5 px |
+| **Tuyết** | 10% (Đông) | Cây ngoài trời chết (trừ Bông tuyết); nhà kính an toàn | Cần lò sưởi; −25% sản phẩm nếu thiếu | −12% tốc chạy | Tuyết 3 khung + hơi thở nhân vật |
+| **Sương mù** | 2% | +20% sâu bệnh | Bình thường | Overlay xám 25%, tầm nhìn giảm | Lớp sương 2 lớp trôi chậm |
+| **Cầu vồng** | sau mưa | +1 bậc phẩm chất mọi cây hái trong ngày | +1 tim khi vuốt ve | ×2 may mắn | Cầu vồng 7 màu 4 khung trên trời |
+| **Mưa sao băng** | 1% (Hạ/Thu) | — | — | Điều ước: buff ngẫu nhiên 1 ngày | Sao rơi 4 khung, nền tối hơn 10% |
 
-### 8.2 Loại thời tiết & ảnh hưởng (ma trận)
-
-| Thời tiết | Tỉ lệ | Cây trồng | Gia súc | Người chơi / NPC | Visual |
-|---|---|---|---|---|---|
-| **Nắng** | 45% | Tưới thủ công cần thiết; +5% tốc độ lớn | Thả ra ngoài, +5% quan hệ | Tốc chạy bình thường | Nắng vàng, đom đóm đêm |
-| **Nhiều mây** | 20% | Tốc độ bình thường | Bình thường | Bình thường | Ánh sáng tản, dịu |
-| **Mưa** | 18% | **Tự tưới 100%**, +10% tốc độ lớn | Bò/vịt +1 sản phẩm; gà bớt vui (−2 quan hệ) | Tốc chạy −10%, cần ô/áo mưa | Mưa hạt, vũng nước có gợn |
-| **Bão** | 5% | **10% cây bị gãy**, hàng rào có thể hư, ngã cây | Không cho ra ngoài, −5 quan hệ/tối nếu chuồng chưa nâng cấp | Cấm câu cá, tầm nhìn giảm, cây cối nghiêng | Gió mạnh, lá bay, tối sầm |
-| **Tuyết** | 10% (chỉ nếu Đông) | Cây ngoài trời chết ngay (trừ Snowberry); nhà kính bảo vệ 100% | Cần lò sưởi; sản phẩm −25% nếu thiếu | Tốc chạy −15%, có thể trượt trên băng | Tuyết rơi, hơi thở, mặt nước đóng băng |
-| **Sương mù** | 2% | +20% sâu bệnh | Bình thường | Tầm nhìn 25 m, NPC bí ẩn xuất hiện | Fog layer, đèn lồng nổi |
-| **Cầu vồng** | Đặc biệt (sau mưa) | +1 chất lượng cho mọi cây thu hoạch trong ngày | +1 quan hệ khi vuốt ve | Nhân đôi may mắn | Vòm cầu vồng, hạt sáng |
-| **Mưa sao băng** | 1% (Hạ/Thu) | — | — | Điều ước: +buff ngẫu nhiên 1 ngày | Sao rơi, nguyện ước |
-
-**Kiến trúc code:** `WeatherSystem` sinh dự báo 3 ngày (dùng cho TV/radio/NPC báo tin) và phát event `OnWeatherChanged`, để `CropInstance` và `AnimalAI` subscribe — không có `Update()` polling toàn bộ cây (tối ưu cho 120×120 ô).
+**Kiến trúc code:** `WeatherSystem` sinh dự báo 3 ngày, phát `OnWeatherChanged`; `CropInstance`, `FarmGrid`, `WeatherFX2D`, `DayNightTint2D` subscribe — **không có `Update()` quét toàn bộ cây**.
 
 ---
 
 ## 9. NPC, CỘNG ĐỒNG & LỄ HỘI
 
-### 9.1 Quan hệ (Relationship)
+### 9.1 Quan hệ
 
-| Chỉ số | Thang | Tăng bằng | Giảm bằng | Ngưỡng mở khóa |
+| Chỉ số | Thang | Tăng | Giảm | Ngưỡng |
 |---|---|---|---|---|
-| Điểm tim (Hearts) | 0–10 (mỗi ♥ = 250 điểm) | Nói chuyện +20/ngày; tặng quà +50 (yêu thích +80); làm nhiệm vụ +100 | Tặng đồ ghét −40; không gặp 7 ngày −20 | ♥2 = mở nhiệm vụ cá nhân; ♥4 = mở công thức; ♥6 = sự kiện đặc biệt; ♥8 = hẹn hò/marriage; ♥10 = quà đặc biệt |
-| Trạng thái | Lạ → Quen → Bạn → Thân → Tri kỷ | — | — | Mỗi mốc có 1 cutscene ngắn 20 s |
+| Tim | 0–10 (250 điểm/tim) | Nói chuyện +20/ngày; quà +50 (yêu thích +80); quest +100 | Quà ghét −40; 7 ngày không gặp −20 | ♥2 quest cá nhân · ♥4 công thức · ♥6 sự kiện · ♥8 hẹn hò · ♥10 quà đặc biệt |
 
-### 9.2 Danh sách NPC chính (10 người, mở rộng lên 24)
+### 9.2 NPC chính
 
-| NPC | Vai trò | Tính cách | Quà yêu thích | Nhiệm vụ tuyến |
+| NPC | Vai trò | Tính cách | Quà yêu thích | Mở khóa |
 |---|---|---|---|---|
-| **Bà Hòa** | Chủ tạp hóa | Ấm áp, hay kể chuyện xưa | Trà hoa cúc, Bánh bí | Mở shop & hướng dẫn chợ |
-| **Ông Bảy** | Ngư dân | Lầm lì, hài hước khô | Cá chép, Rượu gạo | Dạy câu cá, mở thuyền |
-| **Linh** | Thú y | Năng lượng cao | Sữa tươi, Trứng vàng | Mở chuồng, chữa gia súc |
-| **Minh** | Kỹ sư nông nghiệp | Nghiêm túc, mê máy móc | Phụ tùng, Đá quý | Mở công trình, máy móc |
-| **Hân** | Họa sĩ | Mơ mộng | Hoa, Đá phát sáng | Mở Photo Mode, décor |
-| **Bảo** | Đầu bếp | Cầu toàn, nóng tính | Nấm, Cá hồi | Mở bếp, nhà hàng |
-| **Thư** | Nhạc công | Dịu dàng | Nước hoa, Vải | Mở festival âm nhạc |
-| **Nam** | Học sinh | Năng động, tò mò | Nước ép, Mứt | Nhiệm vụ khám phá hang động |
-| **Cô Tuyết** | Thị trưởng | Trang trọng | Trà tuyết, Bánh mì | Mở rộng đất, dự án cộng đồng |
-| **??? / Người Bí Ẩn** | Nhà thảo dược | Bí hiểm | Nấm lạ, Mật ong | Mở khu rừng cổ & phép màu đất |
+| Bà Hòa | Tạp hóa | Ấm áp, hay kể chuyện | Trà hoa cúc, Bánh bí | Shop, hướng dẫn chợ |
+| Ông Bảy | Ngư dân | Lầm lì, hài hước khô | Cá chép, Rượu gạo | Câu cá, thuyền |
+| Linh | Thú y | Năng lượng cao | Sữa tươi, Trứng vàng | Chuồng, chữa gia súc |
+| Minh | Kỹ sư | Nghiêm túc, mê máy móc | Phụ tùng, Đá quý | Công trình, máy móc |
+| Hân | Họa sĩ | Mơ mộng | Hoa, Đá phát sáng | Photo Mode, décor |
+| Bảo | Đầu bếp | Cầu toàn, nóng tính | Nấm, Cá hồi | Bếp, nhà hàng |
+| Thư | Nhạc công | Dịu dàng | Nước hoa, Vải | Festival âm nhạc |
+| Nam | Học sinh | Năng động, tò mò | Nước ép, Mứt | Hầm mỏ |
+| Cô Tuyết | Thị trưởng | Trang trọng | Trà tuyết, Bánh mì | Mở rộng đất, quest cộng đồng |
+| Người Bí Ẩn | Thảo dược | Bí hiểm | Nấm lạ, Mật ong | Rừng cổ & phép màu đất |
 
-### 9.3 Nhiệm vụ phụ (Side Quest) — cấu trúc
+### 9.3 Nhiệm vụ phụ
 
 | Loại | Ví dụ | Thời hạn | Thưởng |
 |---|---|---|---|
-| Giao hàng | "Mang 5 quả trứng tới nhà Linh trước 18:00" | 1 ngày | 200G + ♥1 |
+| Giao hàng | "Mang 5 trứng tới nhà Linh trước 18:00" | 1 ngày | 200G + ♥1 |
 | Nuôi trồng | "Trồng 10 cây ngô" | 1 mùa | 800G + hạt mới |
-| Câu chuyện | "Tìm cuốn nhật ký của ông Bảy ở bờ sông" | Không giới hạn | Mở bản đồ kho báu |
+| Câu chuyện | "Tìm nhật ký ông Bảy ở bờ sông" | Không giới hạn | Bản đồ kho báu |
 | Cộng đồng | "Quyên góp 5.000G xây cầu làng" | 1 mùa | Mở vùng mới |
-| Chế biến | "Làm 3 Phô mai cho Bảo" | 3 ngày | Công thức Bánh phô mai |
-| Bí ẩn | "Điều gì xảy ra trong rừng lúc nửa đêm?" | Không giới hạn | Linh vật đất |
+| Chế biến | "Làm 3 Phô mai cho Bảo" | 3 ngày | Công thức bánh phô mai |
+| Bí ẩn | "Chuyện gì xảy ra trong rừng lúc nửa đêm?" | Không giới hạn | Linh vật đất |
 
-### 9.4 Lịch Lễ Hội (Festival Calendar)
+### 9.4 Lịch lễ hội
 
-| Ngày | Tên lễ hội | Địa điểm | Hoạt động chính | Phần thưởng |
-|---|---|---|---|---|
-| Xuân 7 | **Hội Chợ Hạt Giống** | Quảng trường | Mua hạt rẻ 40%, đổi hạt hiếm | Hạt giống độc quyền |
-| Xuân 13 | **Lễ Hoa Nở** | Đồi hoa | Thi cắm hoa, tặng hoa cho NPC | Trang phục hoa, ♥+ |
-| Xuân 23 | **Ngày Câu Cá Xuân** | Hồ lớn | Mini-game câu cá theo giờ | Cần câu nâng cấp |
-| Hạ 11 | **Cuộc Thi Nông Sản** | Quảng trường | Nộp nông sản chất lượng cao để tính điểm | Cúp vàng, 1.000G |
-| Hạ 20 | **Hội Chợ Biển** | Bãi biển | BBQ, câu mực đêm, đốt lửa | Công thức hải sản |
-| Hạ 26 | **Đua Thuyền** | Sông | Đua thuyền lá với NPC | Thuyền cá nhân |
-| Thu 8 | **Lễ Thu Hoạch** | Trang trại | Nộp 5 món ăn ngon; NPC nấu chung | Công thức mùa |
-| Thu 15 | **Lễ Đèn Lồng** | Ven sông | Thả đèn, điều ước, nhạc sống | Trang phục, quest tình cảm |
-| Thu 24 | **Hội Cây Ăn Quả** | Vườn | Trồng cây kỷ niệm, mỗi NPC 1 cây | Cây ăn quả 5 sao |
-| Đông 5 | **Lễ Ánh Sáng** | Quảng trường | Trang trí cây, tặng quà bí mật | Quà ngẫu nhiên cao cấp |
-| Đông 12 | **Đêm Sao Băng** | Đồi | Cả làng cùng ngắm sao, chơi mini-game | Buff may mắn 3 ngày |
-| Đông 20 | **Lễ Tri Ân** | Nhà thờ/Nhà văn hóa | Tổng kết năm, xem lại thành tích | Danh hiệu, giấy khen |
-| Đông 28 | **Giao Thừa** | Quảng trường | Đếm ngược, pháo hoa, chuyển năm | Mở khóa mùa mới, buff năm mới |
+| Ngày | Lễ hội | Hoạt động | Phần thưởng |
+|---|---|---|---|
+| Xuân 7 | Hội Chợ Hạt Giống | Hạt rẻ 40%, đổi hạt hiếm | Hạt độc quyền |
+| Xuân 13 | Lễ Hoa Nở | Thi cắm hoa, tặng hoa NPC | Trang phục hoa |
+| Xuân 23 | Ngày Câu Cá Xuân | Minigame câu cá theo giờ | Cần câu nâng cấp |
+| Hạ 11 | Cuộc Thi Nông Sản | Nộp nông sản chất lượng cao | Cúp vàng + 1.000G |
+| Hạ 20 | Hội Chợ Biển | BBQ, câu mực đêm | Công thức hải sản |
+| Hạ 26 | Đua Thuyền | Đua thuyền với NPC | Thuyền cá nhân |
+| Thu 8 | Lễ Thu Hoạch | Nấu ăn chung | Công thức mùa |
+| Thu 15 | Lễ Đèn Lồng | Thả đèn, nhạc sống | Trang phục + quest tình cảm |
+| Thu 24 | Hội Cây Ăn Quả | Trồng cây kỷ niệm | Cây ăn quả 5 sao |
+| Đông 5 | Lễ Ánh Sáng | Trang trí cây, quà bí mật | Quà cao cấp |
+| Đông 12 | Đêm Sao Băng | Ngắm sao, minigame | Buff may mắn 3 ngày |
+| Đông 20 | Lễ Tri Ân | Tổng kết năm | Danh hiệu |
+| Đông 28 | Giao Thừa | Đếm ngược, pháo hoa pixel | Buff năm mới |
 
 ---
 
-## 10. KINH TẾ & TIẾN TRÌNH (ECONOMY)
+## 10. KINH TẾ & TIẾN TRÌNH
 
 | Giai đoạn | Tiền kỳ vọng | Nguồn thu chính | Mở khóa |
 |---|---|---|---|
-| Ngày 1–14 | 0 → 3.000G | Bán củ cải/khoai tây | Túi 12 ô, chuồng gà |
-| Ngày 15–40 | 3.000 → 25.000G | Chế biến phô mai/mứt + câu cá | Barn, 24 ô, Artisan, Mine |
-| Ngày 41–80 | 25.000 → 120.000G | Rượu, nước hoa, hải sản quý | Nhà kính, máy cày, mở vùng East |
-| Ngày 81–112+ | 120.000 → ∞ | Cá hiếm, nấm truffle, trang trại du lịch | Thuyền, khu rừng cổ, ngôi nhà thứ 2 |
+| Ngày 1–14 | 0 → 3.000G | Củ cải, khoai tây | Túi 12 ô, Coop |
+| Ngày 15–40 | 3.000 → 25.000G | Phô mai, mứt, cá | Barn, 24 ô, Xưởng, Mỏ |
+| Ngày 41–80 | 25.000 → 120.000G | Rượu, nước hoa, hải sản quý | Nhà kính, máy cày, vùng Đông |
+| Ngày 81+ | 120.000G → ∞ | Cá hiếm, nấm truffle, du lịch | Thuyền, rừng cổ, nhà thứ 2 |
 
-**Chống lạm phát:** mỗi năm, giá bán có trần theo catalog; chi phí bảo trì máy móc tăng 10%/năm; hàng hóa bán quá nhiều cùng 1 loại trong 1 mùa bị giảm 1% giá (tối đa 15%).
+**Chống lạm phát:** giá bán có trần theo catalog; bảo trì máy móc +10%/năm; bán quá nhiều cùng 1 loại trong mùa → giảm 1% giá (tối đa 15%).
 
 ---
 
-## 11. UI / HUD & TRẢI NGHIỆM NGƯỜI DÙNG
+## 11. UI / HUD PIXEL
 
 | Thành phần | Mô tả |
 |---|---|
-| HUD chính | Góc trên-trái: ngày/mùa/thời tiết/giờ + tiền. Góc dưới-phải: 8 ô hotbar + ô công cụ đang cầm. Góc dưới-trái: stamina (vòng cung, nhạt dần) |
-| Prompt tương tác | Hiện giữa màn hình khi raycast trúng: `[E] Tưới nước`, `[E] Thu hoạch`, `[E] Nói chuyện` |
-| Bản đồ | Minimap tròn khi chơi, bản đồ lớn (M) chia vùng, có cắm cờ |
-| Túi đồ | 6 ngăn × 8 ô = 48 (+ mở rộng 96), sắp xếp kéo-thả, có bộ lọc |
-| Nhật ký | Ghi nhiệm vụ, mùa vụ, NPC, thu hoạch kỷ lục |
-| Accessibility | Chế độ không màu (color-blind), cỡ chữ 3 mức, tắt rung camera, tự động tưới (assist mode), chế độ thời gian chậm 0.7×, phụ đề đầy đủ cho mọi câu thoại |
+| HUD trên-trái | Ngày + mùa + giờ + tiền (khung gỗ 9-slice) |
+| HUD trên-phải | Icon thời tiết 16×16 + dự báo 3 ngày (3 icon nhỏ) |
+| Hotbar dưới | 8 ô 20×20 px, ô đang chọn viền sáng vàng (nhấp nháy 2 khung) |
+| Thanh nước | 20×4 px, chia 20 vạch |
+| Prompt | Khung chữ "[E] Tưới nước" hiện góc dưới-giữa + **khung nhấp nháy quanh ô đang nhắm** |
+| Toast | Dải chữ chạy ở đáy màn hình, nền đen 60% |
+| Bản đồ | Minimap 48×48 px góc trên-phải (mở bản đồ lớn bằng M) |
+| Túi đồ | Lưới 8×6 ô 20×20 px, tooltip nền da |
+| Shop | 2 cột, icon + giá, nút "Bán cả" |
+| Accessibility | Font 3 cỡ (8/10/12 px), chế độ không màu, tắt camera shake, tắt nhấp nháy (cho người nhạy cảm ánh sáng), auto-tưới ở chế độ assist |
 
 ---
 
-## 12. ÂM THANH & ÂM NHẠC
+## 12. ÂM THANH
 
 | Lớp | Nội dung |
 |---|---|
-| **Nhạc nền** | 4 bản theo mùa + 4 bản đêm + 1 bản lễ hội + 1 bản menu; dàn nhạc nhỏ (piano, guitar acoustic, accordion, sáo, cello) tông trưởng, tempo 70–95 BPM |
-| **Ambient** | Chim, dế, suối, gió, tuyết, tiếng gỗ kêu, tiếng bếp; thay đổi theo mùa & giờ |
-| **SFX hành động** | Cuốc, xẻng, nước, thu hoạch, hái, bước chân 4 bề mặt (cỏ, đất, gỗ, tuyết) |
-| **SFX sinh vật** | 6 loài gia súc (3 biến thể vui/buồn/đói) |
-| **Audio kể chuyện** | Tiếng "blip" khi hội thoại (kiểu Animal Crossing), không lồng tiếng đầy đủ |
-| **Tổng ngân sách** | ~420 file, 350 MB (nén Vorbis 128 kbps) |
+| Nhạc | 4 bản mùa + 4 bản đêm + 1 lễ hội + 1 menu — **chiptune 8-bit** (2 kênh pulse, 1 triangle, 1 noise) @ 90–110 BPM |
+| Ambient | Chim, dế, suối, gió, gỗ kêu; thay theo mùa & giờ |
+| SFX | Cuốc, nước, thu hoạch, bước chân 4 bề mặt (cỏ/đất/gỗ/tuyết), 6 loài gia súc ×3 trạng thái (vui/đói/buồn) |
+| Định dạng | WAV 22.05 kHz mono cho SFX, OGG cho nhạc · **tổng ~180 file, 45 MB** |
 
 ---
 
@@ -387,10 +383,11 @@ Animation: `Idle_Breathe`, `Walk_Root`, `Run`, `Jump_Start/Loop/Land`, `Hoe_Swin
 
 | Vấn đề | Giải pháp |
 |---|---|
-| Save | 3 khe + auto-save khi ngủ & khi rời nhà; JSON nén (`System.IO.Compression`) + checksum; lưu idempotent theo `saveVersion` để migrate |
-| Ghi gì | Vị trí cây (ô, giống, ngày tuổi, ẩm, chất lượng), gia súc (tên, ♥, đói), NPC (♥, quest), túi, tiền, công trình, thời tiết 3 ngày tới, RNG seed |
-| Co-op (post-launch) | Host-authoritative; `Netcode for GameObjects`; đồng bộ state theo event (không sync Transform cây), dùng `NetworkVariable<CropState>` |
-| Chống bug tiềm ẩn | Không dùng `float` cho tiền/ngày → dùng `int`; mọi thời gian tính bằng `double totalGameMinutes` |
+| Save | 3 khe + tự lưu khi ngủ; JSON + checksum MD5; `saveVersion` để migrate |
+| Ghi gì | `TileData[]` (ô đất + cây), túi đồ, tiền, tim NPC, vị trí/hướng người chơi, thời gian, dự báo thời tiết, XP |
+| Kích thước | ~120 KB/save (200×200 ô) — dùng struct + ghi gọn chỉ ô có thay đổi |
+| Co-op | Host-authoritative, `Netcode for GameObjects`; đồng bộ theo event, không sync Transform cây |
+| Chống bug | Tiền & ngày là `int`; thời gian là `double totalGameMinutes` (không dùng `float`) |
 
 ---
 
@@ -398,62 +395,64 @@ Animation: `Idle_Breathe`, `Walk_Root`, `Run`, `Jump_Start/Loop/Land`, `Hoe_Swin
 
 | Hạng mục | Mục tiêu |
 |---|---|
-| Engine | Unity 6 LTS, URP (Forward+), C# 9, Input System 1.7 |
-| Nền tảng build | Windows/macOS; Switch (downgrade LOD, resolution scale 0.8) |
-| FPS mục tiêu | PC 60 fps @1080p (min spec GTX 1050 Ti, 8 GB RAM, 4 GB VRAM); Switch 30 fps docked |
-| Draw call | ≤ 900 (PC) / ≤ 600 (Switch) |
-| Tam giác/khung hình | ≤ 1.2 M |
-| Shadow | 1 cascade 40 m; bóng xa dùng baked AO |
-| Tối ưu cây trồng | Dùng **Batched Mesh / GPU Instancing** cho cây cùng giống + cùng giai đoạn; mỗi cây không có `MonoBehaviour.Update()` riêng — dùng `TimeManager` tick theo event |
-| Streaming | Địa hình chia 4 sector; cây chỉ active trong bán kính 60 m, xa hơn → impostor 2D |
-| Physics layer | `FarmTile`, `Interactable`, `Building`, `Animal`, `Water`, `Player`, `Terrain` |
-| Đa nền tảng | URP Asset riêng cho từng tier; Quality Setting tự chọn theo `SystemInfo.graphicsMemorySize` |
+| Engine | Unity 6 LTS, **2D (URP 2D Renderer)**, C# 9, New Input System |
+| PPU / Resolution | PPU **16** · internal **320×180** · Pixel Perfect Camera ON |
+| FPS | PC 60 fps @1080p (min spec GTX 750 Ti / iGPU, 4 GB RAM) · Switch 60 fps / 30 fps docked |
+| Draw call | ≤ 200 (PC) / ≤ 150 (Switch) — nhờ **Sprite Atlas** + Tilemap gộp batch |
+| Sprite động | ≤ 400 cùng lúc; ngoài camera → culling group tắt |
+| Bộ nhớ sprite | ≤ 120 MB VRAM (atlas 2048², Compression None cho pixel art) |
+| Tối ưu | Tilemap gộp (không dùng hàng nghìn GameObject) · Struct array cho dữ liệu ô · Object pool cho loot & particle |
+| Vật lý | Chỉ dùng Collider2D cho nhân vật/NPC/công trình; **ô đất không có collider** |
+| Layer | `Player` `NPC` `Interactable` `Collision` `FarmTile`(logic) `Water` `Loot` |
+| Build | Windows/macOS; Switch giảm internal resolution xuống 256×144 |
 
 ---
 
-## 15. LỘ TRÌNH PHÁT TRIỂN & RỦI RO
+## 15. LỘ TRÌNH & RỦI RO
 
-### 15.1 Milestones (18 tháng)
+### 15.1 Milestones (15 tháng)
 
-| Mốc | Thời điểm | Nội dung | Tiêu chí hoàn thành (Definition of Done) |
+| Mốc | Thời điểm | Nội dung | Định nghĩa hoàn thành |
 |---|---|---|---|
-| **M1 – Prototype** | Tháng 2 | Di chuyển 3rd person, cuốc đất, gieo hạt, tưới, 1 loại cây 4 giai đoạn, vòng ngày | Chơi được 1 ngày game không crash, cây lớn đúng |
-| **M2 – Vertical Slice** | Tháng 5 | 1 mùa Xuân đầy đủ, 6 cây, gà, shop, 3 NPC, 1 lễ hội, art pass | Demo 30 phút cho 10 tester ngoài, ≥8/10 "muốn chơi tiếp" |
-| **M3 – Alpha** | Tháng 9 | 4 mùa, 30 cây, 7 vật nuôi, 24 NPC, chế biến, mùa/thời tiết, save/load | Nội dung hoàn tất 100%, có thể chơi từ đầu tới hết năm |
-| **M4 – Beta** | Tháng 13 | Polish, âm thanh hoàn chỉnh, cân bằng, accessibility, localization | 0 bug P0/P1, fps đạt mục tiêu, ≥40 giờ nội dung đo được |
-| **M5 – Launch** | Tháng 16–18 | Store page, trailer, demo festival, co-op beta | Wishlist ≥ 60.000, refund rate < 5% tuần đầu |
+| **M1 Prototype** | Tháng 2 | Di chuyển 8 hướng, cuốc/gieo/tưới, 1 cây 4 sprite, vòng ngày, pixel camera | Chơi 1 ngày game không lỗi, pixel không rung |
+| **M2 Vertical Slice** | Tháng 4 | Mùa Xuân đầy đủ, 6 cây, gà, shop, 3 NPC, 1 lễ hội, art pass | Demo 30 phút cho 10 tester ngoài, ≥8/10 "muốn chơi tiếp" |
+| **M3 Alpha** | Tháng 8 | 4 mùa, 30 cây, 7 vật nuôi, 24 NPC, chế biến, save/load | Chơi trọn 1 năm game |
+| **M4 Beta** | Tháng 12 | Polish, âm thanh, cân bằng, accessibility, localization | 0 bug P0/P1, 60 fps đạt, ≥40 giờ nội dung |
+| **M5 Launch** | Tháng 15 | Store page, trailer, demo festival, co-op beta | Wishlist ≥ 60.000, refund < 5% tuần đầu |
 
-### 15.2 Rủi ro & Giảm thiểu
+### 15.2 Rủi ro
 
 | Rủi ro | Mức | Giảm thiểu |
 |---|---|---|
-| Scope quá lớn (24 NPC + 30 cây) | Cao | Cắt theo "thang nội dung": ưu tiên 4 mùa × 6 cây × 10 NPC cho launch, còn lại DLC |
-| Hiệu năng cây trồng nhiều | Cao | Kiến trúc event-driven, GPU instancing, LOD/impostor — đã đặc tả §14 |
-| Cảm giác "chậm" với người chơi mới | Trung bình | First 30 minutes có "fast-track" cây lớn 1 ngày + hướng dẫn theo ngữ cảnh |
-| Phong cách nghệ thuật bị "generic low-poly" | Trung bình | Quy tắc màu §2.2 + outline nâu + diorama framing; test "silhouette test" mỗi asset |
-| Co-op phá vỡ cân bằng kinh tế | Thấp | Giá bán giảm nhẹ khi ≥3 người chơi; loot rơi chia đều |
+| Số lượng sprite khổng lồ (nhân vật × 4 hướng × nhiều hành động) | **Cao** | Dùng chung base sprite + palette swap; mỗi hành động chỉ 3–6 khung; bộ công cụ Aseprite script để flip/đổi hướng |
+| Pixel art bị "bẩn"/không nhất quán giữa các artist | Cao | Palette file `.pal` chung + **quy tắc 8 màu/sprite** + review theo checklist §2 |
+| Pixel rung / scale lẻ | Trung bình | Pixel Perfect Camera + `PixelArtGlobal` snap; test ở 1080p, 1440p, 720p |
+| Nội dung quá lớn (24 NPC × 30 cây) | Trung bình | Thang nội dung: launch chỉ 4 mùa × 6 cây × 10 NPC; còn lại DLC |
+| Cảm giác "chậm" với người mới | Thấp | First 30 phút có fast-track cây 1 ngày |
 
 ---
 
-## 16. PHỤ LỤC: ĐỐI CHIẾU UNITY ↔ UNREAL ENGINE 5
+## 16. PHỤ LỤC: TRIỂN KHAI 2D TRONG UNITY (bảng ánh xạ)
 
-| Hạng mục | Unity 6 (URP) | Unreal Engine 5 |
+| Hạng mục thiết kế | Cách làm trong Unity 2D | Script trong repo |
 |---|---|---|
-| Script cây trồng | `CropInstance : MonoBehaviour` + `CropData : ScriptableObject` | `ACropActor : AActor` + `UCropDataAsset : UPrimaryDataAsset` |
-| Thời gian game | `TimeManager` singleton + event | `UGameTimeSubsystem : UGameInstanceSubsystem` |
-| Đổi mô hình theo giai đoạn | `GameObject.SetActive` 4 prefab con / hoặc array `Mesh` + `MeshFilter.sharedMesh` | Mảng `UStaticMesh*` + `UStaticMeshComponent::SetStaticMesh()` |
-| Tương tác E | `Physics.SphereCast` + `IInteractable` | `LineTraceSingleByChannel` + `IInteractableInterface` (UINTERFACE) |
-| Đặt cây theo lưới | `Grid<FarmTile>` + `Instantiate` | `Grid` + `SpawnActor` với `SnapToGrid` |
-| Thời tiết | ScriptableObject profile + Particle System + `Shader.SetGlobalFloat` | Niagara + Material Parameter Collection + `UWeatherSubsystem` |
-| Lưu game | JSON (Newtonsoft) / BinaryFormatter | `USaveGame` + `SaveGameToSlot` |
+| Di chuyển 8 hướng | `Rigidbody2D` (dynamic, gravity 0) + `MoveTowards` để đổi hướng "chắc tay" | `PlayerController2D.cs` |
+| Nhắm ô đất trước mặt | `FacingCell()` = vị trí + vector hướng (không raycast) | `PlayerInteractor2D.cs` |
+| Lưới ô đất | `Tilemap` (hình ảnh) + `TileData[]` (dữ liệu) — **không tạo GameObject mỗi ô** | `FarmGrid.cs` |
+| 4 giai đoạn cây | Đổi `SpriteRenderer.sprite` theo `CropData.stageSprites[4]` | `CropInstance.cs` |
+| 4 mùa | `SeasonTheme` (tile + sprite cây + màu) đổi khi mùa chuyển | `SeasonTheme.cs` |
+| Ngày/đêm | Lớp overlay `SpriteRenderer` 1×1 phủ màn hình, đổi màu theo giờ | `DayNightTint2D.cs` |
+| Thời tiết | Particle System 2D (mưa/tuyết/lá) + sét nháy + rung camera | `WeatherFX2D.cs` |
+| Nhân vật đi sau cây | Y-sort: `sortingOrder = -y × 100` | `YSort2D.cs` |
+| Hiệu ứng chín | Nhấp nháy sprite glow 2 khung | `CropInstance.Update()` + `ReadyPulse` logic |
+| Loot rơi | Parabol pixel bằng code (không Rigidbody) + nam châm hút | `LootSpawner.cs`, `ItemPickup.cs` |
+| Chống mờ/rung | `PixelArtGlobal` (Point filter, tắt AA, snap camera, kiểm tra import) | `PixelArtGlobal.cs` |
+| Chống loading khi đổi mùa | Đổi tile + tint + particle ngay tại chỗ | `FarmGrid.ApplySeasonTheme()` |
 
-> Chọn Unity làm engine chính vì: build nhanh cho Switch, hệ sinh thái asset low-poly phong phú, chi phí license rõ ràng cho team 4–6 người. UE5 chỉ dùng nếu ưu tiên Nanite/Lumen cinematic trailer.
-
----
-
-*Tài liệu này là bản sống (living document) — mọi thay đổi cân bằng phải được ghi vào mục Changelog phía dưới.*
+> Đặc tả sprite chi tiết (kích thước, số khung, palette) nằm trong `docs/03-Asset-2D-Sprite-Spec.md`.
 
 ### Changelog
 | Phiên bản | Ngày | Thay đổi |
 |---|---|---|
-| v1.0 | 2026-10-07 | Bản GDD đầy đủ đầu tiên (4 mùa, 8 cây, 7 vật nuôi, 10 NPC, 13 lễ hội) |
+| v2.0 | 2026-10-07 | **Chuyển toàn bộ sang 2D pixel art top-down**: 320×180 @ PPU 16, palette 48 màu, animation sprite, HUD pixel, tech spec 2D, lộ trình rút còn 15 tháng |
+| v1.0 | 2026-10-07 | Bản GDD 3D low-poly đầu tiên (đã lưu trữ trong lịch sử git, commit `899b8e0`) |

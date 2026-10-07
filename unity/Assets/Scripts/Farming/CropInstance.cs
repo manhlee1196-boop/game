@@ -1,332 +1,253 @@
 // ============================================================================
-//  CropInstance.cs  (tên cũ trong Prompt: "CropScript")
+//  CropInstance.cs — MỘT CÂY TRỒNG 2D PIXEL
 //  ---------------------------------------------------------------------------
-//  Quản lý vòng đời 1 cây trồng:
-//    - 4 giai đoạn: Seed → Sprout → Mature → Fruiting (4 model 3D khác nhau)
-//    - Lớn lên theo NGÀY GAME (không phải giây thực), yêu cầu nước tưới
-//    - Tương tác: bấm E để TƯỚI (khi thiếu nước) hoặc THU HOẠCH (khi chín)
-//    - Nhả loot (spawn vật phẩm) khi thu hoạch thành công
+//  · 4 giai đoạn: Hạt giống → Mầm → Trưởng thành → Có quả (4 SPRITE khác nhau)
+//  · Lớn lên theo NGÀY GAME, yêu cầu nước tưới
+//  · Bấm E để TƯỚI (khi khát) hoặc THU HOẠCH (khi chín)
+//  · Nhả loot khi thu hoạch (sprite rơi trên đất)
 //
 //  Đặt tại: Assets/Scripts/Farming/
-//  Gắn vào: Prefab "Crop_<tên cây>" — xem docs/02-Unity-Setup.md để biết cách gắn
+//  Gắn vào: Prefab "Crop_Base" (SpriteRenderer con tên "Visual")
 // ============================================================================
 using System;
 using UnityEngine;
 using VuonMo.Core;
 using VuonMo.Data;
-using VuonMo.Interaction;
-using VuonMo.InventorySystem;
+using VuonMo.Player;
 
 namespace VuonMo.Farming
 {
     [DisallowMultipleComponent]
-    public class CropInstance : MonoBehaviour, IInteractable
+    public class CropInstance : MonoBehaviour
     {
-        // ---------------------------------------------------------------- Dữ liệu
-        [Header("1) CẤU HÌNH CÂY (gán trong Inspector hoặc gọi Initialize())")]
+        [Header("Cấu hình cây")]
         [SerializeField] private CropData data;
 
-        [Header("2) 4 MODEL 3D THEO GIAI ĐOẠN")]
-        [Tooltip("Thứ tự: 0=Seed(hạt), 1=Sprout(mầm), 2=Mature(trưởng thành), 3=Fruiting(có quả).\n" +
-                 "Có thể để trống nếu đã gán stagePrefabs bên trong CropData.")]
-        [SerializeField] private GameObject[] stageVisuals = new GameObject[4];
+        [Header("Tham chiếu (gán trong prefab)")]
+        [Tooltip("SpriteRenderer sẽ hiển thị 4 giai đoạn.")]
+        public SpriteRenderer visual;
+        [Tooltip("Sprite 'lấp lánh' hiện khi cây đã chín (16×16, 2 khung).")]
+        public SpriteRenderer ripeGlow;
+        [Tooltip("Sprite bóng đổ dưới chân cây.")]
+        public SpriteRenderer shadow;
 
-        [Header("3) TRẠNG THÁI (Runtime — không sửa tay)")]
+        [Header("Trạng thái (Runtime)")]
         [SerializeField] private GrowthStage stage = GrowthStage.Seed;
-        [Tooltip("Số ngày có nước đã tích luỹ (đây là 'tuổi' của cây).")]
-        [SerializeField] private int wateredDays = 0;
-        [SerializeField] private int dryStreak = 0;
+        [SerializeField] private int wateredDays;
+        [SerializeField] private int dryStreak;
         [SerializeField] private CropQuality quality = CropQuality.Normal;
-        [SerializeField] private bool isDead = false;
-        [SerializeField] private bool hasFertilizer = false;
+        [SerializeField] private bool isDead;
+        [SerializeField] private bool hasFertilizer;
 
-        [Header("4) THAM CHIẾU")]
-        [SerializeField] private FarmTile tile;
-        [SerializeField] private Transform visualRoot;      // node cha chứa 4 model
-        [SerializeField] private Animator animator;         // tuỳ chọn
-        [SerializeField] private string animStageParam = "Stage"; // int param trong Animator
+        [Header("Hiệu ứng chín")]
+        [Tooltip("Tần số nhấp nháy của sprite lấp lánh (Hz).")]
+        public float blinkHz = 1.6f;
 
-        [Header("5) THU HOẠCH")]
-        [SerializeField] private Transform lootOrigin;      // điểm nhả loot (mặc định = vị trí cây)
-
-        // ---------------------------------------------------------------- Runtime
-        private Season plantedSeason;
-        private GameObject[] runtimeVisuals = new GameObject[4];
-        private int plantedDayIndex;
+        private FarmGrid _grid;
+        private Vector3Int _cell;
+        private Season _plantedSeason;
+        private bool _hooked;
+        private float _blinkTimer;
+        private bool _blinkOn;
 
         public CropData Data => data;
         public GrowthStage Stage => stage;
+        public CropQuality Quality => quality;
         public bool IsRipe => stage == GrowthStage.Fruiting && !isDead;
         public bool IsDead => isDead;
-        public CropQuality Quality => quality;
         public int WateredDays => wateredDays;
-        public FarmTile Tile => tile;
+        public Vector3Int Cell => _cell;
 
-        /// <summary>Event phát ra khi cây đổi giai đoạn (UI, âm thanh, thành tích...).</summary>
         public event Action<CropInstance, GrowthStage> OnStageChanged;
-        /// <summary>Event khi cây được thu hoạch.</summary>
         public event Action<CropInstance, int> OnHarvested;
 
-        // =================================================================
-        //  KHỞI TẠO
-        // =================================================================
-
-        /// <summary>Gọi ngay sau khi tạo cây (từ FarmTile.Plant hoặc khi load save).</summary>
-        public void Initialize(CropData cropData, FarmTile ownerTile, int dayIndex, Season season,
-                               int startingWateredDays = 0, CropQuality startQuality = CropQuality.Normal)
-        {
-            data = cropData;
-            tile = ownerTile;
-            plantedDayIndex = dayIndex;
-            plantedSeason = season;
-            wateredDays = startingWateredDays;
-            quality = startQuality;
-
-            EnsureVisuals();
-            ApplyStageImmediately(data.StageFromDays(wateredDays));
-            HookTimeEvents();
-        }
-
+        // ==================================================================
         private void Awake()
         {
-            if (tile == null) tile = GetComponentInParent<FarmTile>();
-            if (visualRoot == null) visualRoot = transform;
-            if (lootOrigin == null) lootOrigin = transform;
+            if (visual == null) visual = GetComponentInChildren<SpriteRenderer>();
+            if (ripeGlow != null) ripeGlow.enabled = false;
         }
 
         private void Start()
         {
-            // Trường hợp script được gắn tay vào prefab và đặt sẵn trong scene
             if (data != null)
             {
-                EnsureVisuals();
-                ApplyStageImmediately(data.StageFromDays(wateredDays));
+                ApplyStageVisual(stage);
+                HookEvents();
             }
-            HookTimeEvents();
         }
 
-        private bool _hooked;
-        private void HookTimeEvents()
+        /// <summary>Khởi tạo khi gieo hạt hoặc khi load save.</summary>
+        public void Initialize(CropData cropData, FarmGrid grid, Vector3Int cell, Season season,
+                               int startingWateredDays = 0, CropQuality startQuality = CropQuality.Normal)
+        {
+            data = cropData;
+            _grid = grid;
+            _cell = cell;
+            _plantedSeason = season;
+            wateredDays = startingWateredDays;
+            quality = startQuality;
+            isDead = false;
+
+            HookEvents();
+            ApplyStageVisual(data.StageFromDays(wateredDays));
+        }
+
+        private void HookEvents()
         {
             if (_hooked || TimeManager.Instance == null) return;
             TimeManager.Instance.OnDayChanged += HandleNewDay;
             TimeManager.Instance.OnSeasonChanged += HandleSeasonChanged;
-            if (WeatherSystem.Instance != null)
-                WeatherSystem.Instance.OnWeatherChanged += HandleWeatherChanged;
             _hooked = true;
         }
 
         private void OnDestroy()
         {
-            if (!_hooked) return;
-            if (TimeManager.Instance != null)
+            if (_hooked && TimeManager.Instance != null)
             {
                 TimeManager.Instance.OnDayChanged -= HandleNewDay;
                 TimeManager.Instance.OnSeasonChanged -= HandleSeasonChanged;
             }
-            if (WeatherSystem.Instance != null)
-                WeatherSystem.Instance.OnWeatherChanged -= HandleWeatherChanged;
+            if (_grid != null) _grid.NotifyCropRemoved(_cell, this);
         }
 
-        // =================================================================
-        //  LOGIC SINH TRƯỞNG — chạy 1 lần mỗi NGÀY GAME
-        // =================================================================
-
+        // ==================================================================
+        //  SINH TRƯỞNG — chạy 1 lần mỗi NGÀY GAME
+        // ==================================================================
         private void HandleNewDay(int dayIndex, Season season)
         {
-            if (isDead) return;
+            if (isDead || data == null) return;
 
-            bool tileIsWet = tile != null && tile.moisture >= (data != null ? data.requiredMoisture : 0.3f);
-            bool rainWatered = WeatherSystem.Instance != null && WeatherSystem.Instance.IsRaining();
-            bool gotWater = rainWatered || tileIsWet || (data != null && !data.needsWater);
+            bool raining = WeatherSystem.Instance != null && WeatherSystem.Instance.IsRaining();
+            float moisture = _grid != null ? _grid.GetMoisture(_cell) : 0f;
+            bool tileWet = moisture >= data.requiredMoisture;
+            bool gotWater = !data.needsWater || raining || tileWet;
 
-            if (gotWater)
-            {
-                dryStreak = 0;
-                wateredDays++;
-            }
-            else
-            {
-                dryStreak++;
-            }
+            if (gotWater) { dryStreak = 0; wateredDays++; }
+            else dryStreak++;
 
-            // --- Cây héo dần rồi chết nếu không được tưới ---
-            if (dryStreak >= data.dryDaysBeforeWither + data.witherDaysBeforeDeath)
-            {
-                Die();
-                return;
-            }
+            // 1) Khô hạn kéo dài -> chết
+            if (dryStreak >= data.dryDaysBeforeWither + data.witherDaysBeforeDeath) { Die(); return; }
 
-            bool withering = dryStreak >= data.dryDaysBeforeWither;
-            if (withering)
+            // 2) Khô hạn -> héo (vẫn cứu được nếu tưới lại)
+            if (dryStreak >= data.dryDaysBeforeWither) { SetStage(GrowthStage.Withering); return; }
+
+            // 3) Mùa Đông giết cây ngoài trời
+            if (season == Season.Winter && !data.survivesWinterOutdoor)
             {
-                SetStage(GrowthStage.Withering);
-                return;
+                var t = _grid != null ? _grid.GetTile(_cell) : null;
+                bool greenhouse = t.HasValue && t.Value.isGreenhouse;
+                if (!greenhouse) { Die(); return; }
             }
 
-            // --- Mùa Đông làm cây ngoài trời chết (trừ cây chịu lạnh / nhà kính) ---
-            if (season == Season.Winter
-                && !data.survivesWinterOutdoor
-                && (tile == null || !tile.isGreenhouse))
-            {
-                Die();
-                return;
-            }
-
-            // --- Thời tiết làm gãy cây (bão/tuyết) ---
+            // 4) Bão/tuyết làm gãy cây
             if (WeatherSystem.Instance != null)
             {
                 float breakChance = WeatherSystem.Instance.GetProfile(WeatherSystem.Instance.Today).cropBreakChance;
-                if (breakChance > 0f && UnityEngine.Random.value < breakChance)
-                {
-                    Die();
-                    return;
-                }
+                if (breakChance > 0f && UnityEngine.Random.value < breakChance) { Die(); return; }
             }
 
-            // --- Lớn lên theo số ngày ẩm tích luỹ ---
-            int targetStageIndex = data.StageFromDays(wateredDays);
-            GrowthStage target = (GrowthStage)targetStageIndex;
+            // 5) Lớn lên theo số ngày ẩm tích luỹ
+            int targetIndex = data.StageFromDays(wateredDays);
+            var target = (GrowthStage)targetIndex;
             if (target != stage)
             {
-                if (target == GrowthStage.Fruiting)
-                    RollQuality();
+                if (target == GrowthStage.Fruiting) RollQuality();
                 SetStage(target);
-            }
-            else if (stage == GrowthStage.Fruiting)
-            {
-                UpdateReadyFeedback();  // vẫn còn quả -> tiếp tục hiệu ứng nhấp nháy
             }
         }
 
         private void HandleSeasonChanged(Season newSeason)
         {
-            if (isDead) return;
-            if (newSeason == Season.Winter && !data.survivesWinterOutdoor && (tile == null || !tile.isGreenhouse))
-                Die();
+            if (isDead || data == null) return;
+            if (newSeason != Season.Winter || data.survivesWinterOutdoor) return;
+
+            var t = _grid != null ? _grid.GetTile(_cell) : null;
+            if (!(t.HasValue && t.Value.isGreenhouse)) Die();
         }
 
-        private void HandleWeatherChanged(WeatherType now, WeatherType before) { /* dành cho VFX mưa/bão nếu cần */ }
-
-        // =================================================================
-        //  CHUYỂN GIAI ĐOẠN (ĐỔI MODEL 3D)
-        // =================================================================
-
+        // ==================================================================
+        //  ĐỔI SPRITE THEO GIAI ĐOẠN
+        // ==================================================================
         private void SetStage(GrowthStage newStage)
         {
             if (stage == newStage) return;
             stage = newStage;
-            ApplyStageImmediately(stage);
+            ApplyStageVisual(stage);
             OnStageChanged?.Invoke(this, stage);
         }
 
-        /// <summary>Bật đúng 1 trong 4 model giai đoạn (đổi mô hình 3D).</summary>
-        private void ApplyStageImmediately(GrowthStage targetStage)
+        private void ApplyStageVisual(GrowthStage s)
         {
-            EnsureVisuals();
+            if (visual == null || data == null) return;
 
-            int index = Mathf.Clamp((int)targetStage, 0, 3);
-
-            // Héo/chết: dùng model giai đoạn cuối đã có nhưng đổi màu, hoặc ẩn hết nếu chết hẳn
-            bool deadOrWithering = targetStage == GrowthStage.Withering || targetStage == GrowthStage.Dead;
-
-            for (int i = 0; i < runtimeVisuals.Length; i++)
+            switch (s)
             {
-                if (runtimeVisuals[i] == null) continue;
-                bool active = deadOrWithering ? (i == Mathf.Clamp((int)GrowthStage.Mature, 0, 3) && targetStage == GrowthStage.Withering)
-                                              : (i == index);
-                runtimeVisuals[i].SetActive(active);
+                case GrowthStage.Seed:
+                case GrowthStage.Sprout:
+                case GrowthStage.Mature:
+                case GrowthStage.Fruiting:
+                    visual.sprite = data.GetStageSprite((int)s);
+                    visual.color = Color.white;
+                    break;
+                case GrowthStage.Withering:
+                    visual.sprite = data.witheringSprite != null ? data.witheringSprite : data.GetStageSprite(2);
+                    visual.color = new Color(0.85f, 0.75f, 0.55f);   // ngả vàng khô
+                    break;
+                case GrowthStage.Dead:
+                    visual.sprite = data.deadSprite != null ? data.deadSprite : data.GetStageSprite(0);
+                    visual.color = new Color(0.55f, 0.45f, 0.38f);
+                    break;
             }
 
-            if (deadOrWithering)
-                ApplyWitherColor(targetStage == GrowthStage.Dead);
+            // Sprite cao (ngô/nho 16×32) cần neo ở chân
+            if (visual.sprite != null) visual.transform.localPosition = Vector3.zero;
 
-            if (animator != null)
-                animator.SetInteger(animStageParam, index);
-
-            if (IsRipe)
-                UpdateReadyFeedback();
+            if (ripeGlow != null) ripeGlow.enabled = false;
+            _blinkOn = false;
         }
 
-        /// <summary>Tạo/cập nhật 4 model con từ stageVisuals hoặc từ CropData.stagePrefabs.</summary>
-        private void EnsureVisuals()
+        private void Update()
         {
-            Transform root = visualRoot != null ? visualRoot : transform;
+            // Nhấp nháy lấp lánh khi cây đã chín (thay cho "animation" của bản 3D)
+            if (data == null || !data.blinkWhenRipe) return;
+            if (ripeGlow == null) return;
 
-            for (int i = 0; i < 4; i++)
+            if (!IsRipe)
             {
-                if (runtimeVisuals[i] != null) continue;
+                if (ripeGlow.enabled) ripeGlow.enabled = false;
+                _blinkOn = false;
+                return;
+            }
 
-                // a) Ưu tiên model đã gán trực tiếp trong Inspector
-                if (stageVisuals != null && stageVisuals.Length > i && stageVisuals[i] != null)
-                {
-                    runtimeVisuals[i] = stageVisuals[i];
-                    runtimeVisuals[i].SetActive(false);
-                    continue;
-                }
-
-                // b) Nếu không có, tự tạo từ CropData.stagePrefabs
-                if (data != null && data.stagePrefabs != null && data.stagePrefabs.Length > i && data.stagePrefabs[i] != null)
-                {
-                    GameObject go = Instantiate(data.stagePrefabs[i], root);
-                    go.transform.localPosition = Vector3.zero;
-                    go.transform.localRotation = Quaternion.identity;
-                    go.name = $"Stage{i}_{data.cropId}";
-                    runtimeVisuals[i] = go;
-                    go.SetActive(false);
-                    continue;
-                }
-
-                // c) Nếu CropData chỉ có Mesh (tối ưu), tạo GameObject + MeshFilter
-                if (data != null && data.stageMeshes != null && data.stageMeshes.Length > i && data.stageMeshes[i] != null)
-                {
-                    GameObject go = new GameObject($"Stage{i}_{data.cropId}");
-                    go.transform.SetParent(root, false);
-                    var mf = go.AddComponent<MeshFilter>();
-                    mf.sharedMesh = data.stageMeshes[i];
-                    go.AddComponent<MeshRenderer>();
-                    runtimeVisuals[i] = go;
-                    go.SetActive(false);
-                }
+            _blinkTimer += Time.deltaTime;
+            float period = 1f / Mathf.Max(0.1f, blinkHz);
+            if (_blinkTimer >= period * 0.5f)
+            {
+                _blinkTimer = 0f;
+                _blinkOn = !_blinkOn;
+                ripeGlow.enabled = _blinkOn;
+                // Phẩm chất cao -> lấp lánh màu
+                ripeGlow.color = quality == CropQuality.Rainbow ? new Color(1f, 0.6f, 1f)
+                               : quality == CropQuality.Gold ? new Color(1f, 0.9f, 0.45f)
+                               : quality == CropQuality.Silver ? new Color(0.85f, 0.92f, 1f)
+                               : Color.white;
             }
         }
 
-        private void ApplyWitherColor(bool dead)
-        {
-            Color tint = dead ? new Color(0.35f, 0.28f, 0.2f) : new Color(0.75f, 0.65f, 0.35f);
-            foreach (var go in runtimeVisuals)
-            {
-                if (go == null) continue;
-                var renderers = go.GetComponentsInChildren<Renderer>();
-                foreach (var r in renderers)
-                {
-                    var mpb = new MaterialPropertyBlock();
-                    r.GetPropertyBlock(mpb);
-                    mpb.SetColor("_BaseColor", tint); // URP: _BaseColor; Built-in: _Color
-                    mpb.SetColor("_Color", tint);
-                    r.SetPropertyBlock(mpb);
-                }
-            }
-        }
-
-        /// <summary>Hiệu ứng "cây đã chín": nhấp nháy nhẹ + particle lấp lánh.</summary>
-        private void UpdateReadyFeedback()
-        {
-            var pulse = GetComponent<ReadyPulse>();
-            if (pulse != null) pulse.SetQuality(quality);
-        }
-
-        // =================================================================
+        // ==================================================================
         //  PHẨM CHẤT
-        // =================================================================
-
+        // ==================================================================
         private void RollQuality()
         {
-            float nutrientBonus = tile != null ? (tile.nutrients - 0.5f) * 0.4f : 0f;
+            float nutrientBonus = (_grid != null ? _grid.GetNutrients(_cell) - 0.5f : 0f) * 0.4f;
             bool rainbowDay = WeatherSystem.Instance != null && WeatherSystem.Instance.Today == WeatherType.Rainbow;
             bool rested = TimeManager.Instance != null && TimeManager.Instance.wellRestedBuff;
 
-            float roll = UnityEngine.Random.value + nutrientBonus + (hasFertilizer ? 0.15f : 0f) + (rainbowDay ? 0.25f : 0f) + (rested ? 0.05f : 0f);
+            float roll = UnityEngine.Random.value + nutrientBonus
+                       + (hasFertilizer ? 0.15f : 0f)
+                       + (rainbowDay ? 0.25f : 0f)
+                       + (rested ? 0.05f : 0f);
 
             if (roll >= 1.0f - data.rainbowChance) quality = CropQuality.Rainbow;
             else if (roll >= 0.85f - data.goldChance) quality = CropQuality.Gold;
@@ -336,46 +257,39 @@ namespace VuonMo.Farming
 
         public void ApplyFertilizer() => hasFertilizer = true;
 
-        // =================================================================
-        //  THU HOẠCH — NHẢ LOOT
-        // =================================================================
-
-        /// <summary>Thu hoạch cây. Trả về số lượng nông sản đã nhả ra (0 nếu thất bại).</summary>
+        // ==================================================================
+        //  THU HOẠCH & NHẢ LOOT
+        // ==================================================================
         public int Harvest()
         {
-            if (!IsRipe)
-            {
-                Debug.Log($"[Crop] {data?.displayName} chưa chín (giai đoạn {stage}).");
-                return 0;
-            }
+            if (!IsRipe || data == null) return 0;
 
             int amount = UnityEngine.Random.Range(data.minYield, data.maxYield + 1);
             if (quality == CropQuality.Rainbow) amount += 1;
 
-            // ---- 1) Sinh loot ----
-            if (data.harvestItem != null && LootSpawner.Instance != null)
-                LootSpawner.Instance.SpawnLoot(data.harvestItem, amount, lootOrigin.position, quality, transform.forward);
-            else if (data.harvestItem != null)
-                Inventory.Instance?.Add(data.harvestItem, amount, quality); // fallback nếu không có LootSpawner
+            // 1) Nhả loot ra đất (hoặc vào túi nếu autoCollect)
+            if (LootSpawner.Instance != null)
+                LootSpawner.Instance.SpawnLoot(data, amount, transform.position, quality, Camera.main);
+            else
+            {
+                for (int i = 0; i < amount; i++)
+                    InventorySystem.Inventory.Instance?.Add(data.harvestItem, 1, quality);
+            }
 
-            // ---- 2) VFX + âm thanh ----
+            // 2) VFX pixel
             if (data.harvestVfxPrefab != null)
-                Instantiate(data.harvestVfxPrefab, lootOrigin.position, Quaternion.identity);
-            if (AudioManager.Instance != null)
-                AudioManager.Instance.PlayHarvest(data.cropId);
+                Instantiate(data.harvestVfxPrefab, transform.position + Vector3.up * 0.3f, Quaternion.identity);
 
-            // ---- 3) Cộng XP / thành tích ----
-            if (PlayerStats.Instance != null)
-                PlayerStats.Instance.AddFarmingXp(data.farmingXp);
-            if (tile != null)
-                tile.nutrients = Mathf.Clamp01(tile.nutrients - tile.nutrientLossPerHarvest);
+            if (AudioManager.Instance != null) AudioManager.Instance.PlayHarvest(data.cropId);
+            if (PlayerStats.Instance != null) PlayerStats.Instance.AddFarmingXp(data.farmingXp);
+
+            if (_grid != null) _grid.Fertilize(_cell, -_grid.nutrientLossPerHarvest);   // trừ dinh dưỡng đất
 
             OnHarvested?.Invoke(this, amount);
 
-            // ---- 4) Cây tái sinh hoặc kết thúc vòng đời ----
+            // 3) Cây tái sinh hoặc kết thúc
             if (data.regrows)
             {
-                // Quay lại giai đoạn Mature và cần đúng regrowDays ngày ẩm để chín lại
                 int matureThreshold = data.CumulativeDays(3);
                 wateredDays = matureThreshold - Mathf.Max(1, data.daysPerStage[3]);
                 quality = CropQuality.Normal;
@@ -384,10 +298,8 @@ namespace VuonMo.Farming
             }
             else
             {
-                if (tile != null) tile.ClearCrop(keepTilled: true, consumeNutrients: false);
-                else Destroy(gameObject);
+                _grid?.ClearCrop(_cell, keepTilled: true);
             }
-
             return amount;
         }
 
@@ -395,44 +307,31 @@ namespace VuonMo.Farming
         {
             isDead = true;
             stage = GrowthStage.Dead;
-            ApplyStageImmediately(GrowthStage.Dead);
-            ApplyWitherColor(true);
-            if (data != null && data.regrows) { /* cây tái sinh cũng chết hẳn */ }
-
-            // Cây chết sẽ bị ẩn model và chỉ còn "gốc khô" để người chơi cuốc bỏ
-            foreach (var go in runtimeVisuals) if (go != null) go.SetActive(true);
-            ApplyWitherColor(true);
+            ApplyStageVisual(GrowthStage.Dead);
+            if (ripeGlow != null) ripeGlow.enabled = false;
         }
 
-        /// <summary>Dọn xác cây chết (dùng cuốc).</summary>
+        /// <summary>Dọn cây chết (bằng cuốc).</summary>
         public void ClearDead()
         {
-            if (tile != null) tile.ClearCrop(keepTilled: true);
+            if (_grid != null) _grid.ClearCrop(_cell, keepTilled: true);
             else Destroy(gameObject);
         }
 
-        // =================================================================
-        //  IInteractable — BẤM PHÍM E
-        // =================================================================
-
-        public Transform InteractTransform => transform;
-
-        public string GetPrompt(PlayerInteractor player)
+        // ==================================================================
+        //  TƯƠNG TÁC (gọi từ PlayerInteractor2D khi bấm E)
+        // ==================================================================
+        public string GetPrompt(PlayerInteractor2D player)
         {
+            if (data == null) return "";
             if (isDead) return "[E] Dọn cây chết (cần Cuốc)";
-
-            if (IsRipe)
-                return $"[E] Thu hoạch {data.displayName} {QualityUtil.Suffix(quality)}";
-
-            if (IsThirsty())
-                return "[E] Tưới nước";
+            if (IsRipe) return $"[E] Thu hoạch {data.displayName}{QualityUtil.Suffix(quality)}";
+            if (IsThirsty()) return "[E] Tưới nước";
 
             return $"{data.displayName} — {StageName(stage)} (còn {DaysLeftToRipe()} ngày)";
         }
 
-        public bool CanInteract(PlayerInteractor player) => true;
-
-        public void Interact(PlayerInteractor player)
+        public void Interact(PlayerInteractor2D player)
         {
             if (isDead)
             {
@@ -441,15 +340,16 @@ namespace VuonMo.Farming
                 return;
             }
 
-            // 1) Cây chín -> thu hoạch (không cần công cụ, hoặc cần Liềm nếu là cây hạt)
+            // 1) Cây chín -> thu hoạch
             if (IsRipe)
             {
                 int got = Harvest();
-                if (got > 0) player.ShowToast($"Thu hoạch +{got} {data.harvestItem?.displayName ?? data.displayName}");
+                if (got > 0 && data != null)
+                    player.ShowToast($"Thu hoạch +{got} {data.displayName}");
                 return;
             }
 
-            // 2) Cây thiếu nước -> tưới
+            // 2) Cây khát -> tưới
             if (IsThirsty())
             {
                 if (player.CurrentTool != ToolType.WateringCan && player.CurrentTool != ToolType.None)
@@ -457,37 +357,30 @@ namespace VuonMo.Farming
                     player.ShowToast("Hãy chọn Bình tưới (phím 2)");
                     return;
                 }
-                if (!player.ConsumeWater())
-                {
-                    player.ShowToast("Bình đã hết nước");
-                    return;
-                }
-                tile?.Water();
+                if (!player.ConsumeWater()) { player.ShowToast("Bình đã hết nước"); return; }
+                _grid?.Water(_cell);
                 player.ShowToast($"Đã tưới {data.displayName}");
                 return;
             }
 
-            // 3) Bình thường -> chỉ thông báo trạng thái
-            player.ShowToast($"{data.displayName}: {StageName(stage)} — còn {DaysLeftToRipe()} ngày nữa chín");
+            // 3) Bình thường
+            player.ShowToast($"{data.displayName}: {StageName(stage)} — còn {DaysLeftToRipe()} ngày");
         }
 
-        // =================================================================
+        // ==================================================================
         //  TIỆN ÍCH
-        // =================================================================
-
-        /// <summary>Cây có đang thiếu nước không (đất khô & chưa mưa & cây cần nước)?</summary>
+        // ==================================================================
         public bool IsThirsty()
         {
             if (data == null || !data.needsWater) return false;
             if (WeatherSystem.Instance != null && WeatherSystem.Instance.IsRaining()) return false;
-            return tile != null && tile.moisture < data.requiredMoisture;
+            return _grid != null && _grid.GetMoisture(_cell) < data.requiredMoisture;
         }
 
         public int DaysLeftToRipe()
         {
             if (data == null) return 0;
-            int need = data.CumulativeDays(3);
-            return Mathf.Max(0, need - wateredDays);
+            return Mathf.Max(0, data.CumulativeDays(3) - wateredDays);
         }
 
         public string StageName(GrowthStage s)
@@ -503,9 +396,9 @@ namespace VuonMo.Farming
             }
         }
 
-        // =================================================================
+        // ==================================================================
         //  LƯU / TẢI
-        // =================================================================
+        // ==================================================================
         [Serializable]
         public struct CropSave
         {
@@ -514,7 +407,6 @@ namespace VuonMo.Farming
             public int stageIndex;
             public int qualityIndex;
             public bool dead;
-            public bool fertilized;
         }
 
         public CropSave GetSave()
@@ -525,23 +417,22 @@ namespace VuonMo.Farming
                 wateredDays = wateredDays,
                 stageIndex = (int)stage,
                 qualityIndex = (int)quality,
-                dead = isDead,
-                fertilized = hasFertilizer
+                dead = isDead
             };
         }
 
-        public void LoadSave(CropSave save, CropData cropData, FarmTile ownerTile, Season season)
+        public void LoadSave(CropSave save, CropData cropData, FarmGrid grid, Vector3Int cell)
         {
             data = cropData;
-            tile = ownerTile;
+            _grid = grid;
+            _cell = cell;
             wateredDays = save.wateredDays;
             quality = (CropQuality)save.qualityIndex;
-            hasFertilizer = save.fertilized;
             isDead = save.dead;
-            HookTimeEvents();
-            EnsureVisuals();
             stage = (GrowthStage)save.stageIndex;
-            ApplyStageImmediately(stage);
+
+            HookEvents();
+            ApplyStageVisual(stage);
         }
     }
 }

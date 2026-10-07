@@ -40,7 +40,8 @@ Saved/
 *.xcodeproj
 *.xcworkspace
 
-# ===== 3D / Art source (giữ file gốc ở nơi khác, không nhét vào Git) =====
+# ===== 3D / Art source =====
+# LƯU Ý: file nguồn pixel art (.aseprite, .kra) KHÔNG bị ignore — phải commit cùng PNG export.
 *.blend1
 *.blend2
 *.fbx
@@ -49,6 +50,14 @@ Saved/
 *.psd
 *.tif
 *.exr
+
+# ===== Pixel art (Aseprite) =====
+# Aseprite tự tạo file backup khi crash — không cần commit
+*.aseprite~
+*.bak
+# Sprite atlas / export tạm do tool sinh ra (build lại được)
+/SpriteAtlases/
+/[Aa]ssets/[Gg]enerated/
 
 # ===== Hệ điều hành / Editor =====
 .DS_Store
