@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Câu Cá 3D</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      background: #0b2233;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    #game-canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
+
+    .panel {
+      position: absolute;
+      background: rgba(8, 28, 44, 0.72);
+      color: #eaf6ff;
+      border: 1px solid rgba(120, 200, 255, 0.25);
+      border-radius: 12px;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    /* ===== Top bar ===== */
+    #topbar {
+      top: 14px; left: 14px; right: 14px;
+      padding: 12px 18px;
+      display: flex; align-items: center; gap: 18px;
+    }
+    #topbar h1 {
+      font-size: 20px; font-weight: 700; letter-spacing: 0.5px;
+      background: linear-gradient(90deg, #7fe7ff, #ffd166);
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+      white-space: nowrap;
+    }
+    .stat {
+      display: flex; flex-direction: column; line-height: 1.25;
+      padding: 0 12px; border-left: 1px solid rgba(120, 200, 255, 0.2);
+    }
+    .stat .label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px; color: #8fc6e8; }
+    .stat .value { font-size: 18px; font-weight: 700; color: #fff; }
+    #topbar .spacer { flex: 1; }
+
+    .btn {
+      pointer-events: auto;
+      cursor: pointer;
+      border: 1px solid rgba(120, 200, 255, 0.35);
+      background: rgba(30, 90, 130, 0.55);
+      color: #eaf6ff;
+      font-size: 13px; font-weight: 600;
+      padding: 8px 14px; border-radius: 9px;
+      transition: background .15s, transform .1s;
+      white-space: nowrap;
+    }
+    .btn:hover { background: rgba(50, 130, 180, 0.75); transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+
+    /* ===== Status message ===== */
+    #status {
+      left: 50%; top: 88px; transform: translateX(-50%);
+      padding: 10px 22px; font-size: 16px; font-weight: 600;
+      text-align: center;
+      opacity: 0; transition: opacity .25s;
+      pointer-events: none;
+    }
+    #status.show { opacity: 1; }
+    #status.alert {
+      background: rgba(200, 60, 40, 0.85);
+      border-color: rgba(255, 160, 120, 0.6);
+      animation: pulse .55s infinite alternate;
+    }
+    @keyframes pulse {
+      from { transform: translateX(-50%) scale(1); }
+      to   { transform: translateX(-50%) scale(1.06); }
+    }
+
+    /* ===== Power bar ===== */
+    #power-wrap {
+      left: 50%; bottom: 84px; transform: translateX(-50%);
+      width: 340px; padding: 12px 16px 14px;
+      display: none;
+    }
+    #power-wrap .label {
+      font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+      color: #8fc6e8; margin-bottom: 8px; text-align: center;
+    }
+    .bar-track {
+      width: 100%; height: 16px; border-radius: 8px;
+      background: rgba(255, 255, 255, 0.12); overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    .bar-fill {
+      height: 100%; width: 0%;
+      border-radius: 8px;
+      transition: width .05s linear;
+    }
+    #power-fill { background: linear-gradient(90deg, #43e97b, #f9f871, #ff5e62); }
+
+    /* ===== Reeling HUD ===== */
+    #reel-wrap {
+      left: 50%; bottom: 84px; transform: translateX(-50%);
+      width: 420px; padding: 14px 18px;
+      display: none;
+    }
+    #reel-wrap .row { margin-bottom: 12px; }
+    #reel-wrap .row:last-child { margin-bottom: 0; }
+    #reel-wrap .label {
+      display: flex; justify-content: space-between;
+      font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase;
+      color: #8fc6e8; margin-bottom: 6px;
+    }
+    #tension-fill { background: linear-gradient(90deg, #43e97b 0%, #f9f871 55%, #ff5e62 100%); }
+    #distance-fill { background: linear-gradient(90deg, #ff5e62 0%, #f9f871 50%, #43e97b 100%); }
+    #stamina-fill { background: linear-gradient(90deg, #a78bfa, #60a5fa); }
+
+    /* ===== Catch modal ===== */
+    #catch-modal {
+      left: 50%; top: 50%; transform: translate(-50%, -50%) scale(0.92);
+      width: 380px; padding: 26px 26px 22px;
+      display: none; text-align: center;
+      opacity: 0; transition: opacity .25s, transform .25s;
+    }
+    #catch-modal.show {
+      display: block; opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    #catch-modal .caught-label {
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: #ffd166;
+    }
+    #catch-modal .fish-name {
+      font-size: 32px; font-weight: 800; margin: 6px 0 2px;
+    }
+    #catch-modal .fish-rarity {
+      display: inline-block; padding: 3px 12px; border-radius: 20px;
+      font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+      text-transform: uppercase; margin-bottom: 14px;
+    }
+    #catch-modal .fish-stats {
+      display: flex; justify-content: center; gap: 26px; margin: 10px 0 20px;
+    }
+    #catch-modal .fish-stats .s .k { font-size: 10px; color: #8fc6e8; letter-spacing: 1px; text-transform: uppercase; }
+    #catch-modal .fish-stats .s .v { font-size: 22px; font-weight: 700; }
+    #catch-modal .fish-desc { font-size: 13px; color: #b8d9ef; line-height: 1.55; margin-bottom: 18px; }
+
+    /* ===== Collection ===== */
+    #collection {
+      top: 88px; right: 14px; width: 250px;
+      padding: 14px 16px; max-height: 62vh; overflow-y: auto;
+      display: none;
+    }
+    #collection h2 {
+      font-size: 13px; letter-spacing: 2px; text-transform: uppercase;
+      color: #ffd166; margin-bottom: 12px;
+    }
+    .coll-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 6px; border-radius: 8px; margin-bottom: 4px;
+      border: 1px solid transparent;
+    }
+    .coll-item.has { background: rgba(255, 255, 255, 0.06); border-color: rgba(120, 200, 255, 0.15); }
+    .coll-item .swatch {
+      width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+      border: 2px solid rgba(255, 255, 255, 0.25);
+    }
+    .coll-item .info .name { font-size: 13px; font-weight: 700; }
+    .coll-item .info .sub { font-size: 11px; color: #8fc6e8; }
+    .coll-item.locked { opacity: 0.45; }
+    .coll-item.locked .swatch { background: #345 !important; }
+
+    /* ===== Help ===== */
+    #help {
+      left: 14px; bottom: 14px; width: 260px;
+      padding: 12px 16px; font-size: 12px; line-height: 1.7;
+    }
+    #help b { color: #ffd166; }
+    .key {
+      display: inline-block; padding: 1px 7px; margin: 0 2px;
+      background: rgba(255, 255, 255, 0.12); border-radius: 5px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      font-family: inherit; font-size: 11px; font-weight: 700;
+    }
+
+    /* Toast log */
+    #toast-wrap {
+      right: 14px; bottom: 14px; display: flex; flex-direction: column;
+      gap: 8px; align-items: flex-end; pointer-events: none;
+    }
+    .toast {
+      padding: 9px 14px; font-size: 12.5px; font-weight: 600;
+      animation: toastIn .3s ease, toastOut .4s ease 3.2s forwards;
+    }
+    @keyframes toastIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: none; } }
+    @keyframes toastOut { to { opacity: 0; transform: translateX(20px); } }
+
+    /* Loading */
+    #loading {
+      position: absolute; inset: 0; z-index: 50;
+      background: radial-gradient(ellipse at center, #123a55, #081c2c);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: #eaf6ff; transition: opacity .6s;
+    }
+    #loading h1 {
+      font-size: 42px; font-weight: 800; letter-spacing: 2px;
+      background: linear-gradient(90deg, #7fe7ff, #ffd166);
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    #loading p { margin-top: 10px; color: #8fc6e8; font-size: 14px; letter-spacing: 1px; }
+    .spinner {
+      margin-top: 28px; width: 42px; height: 42px;
+      border: 4px solid rgba(255, 255, 255, 0.15);
+      border-top-color: #7fe7ff; border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* HUD không chắn chuột — trừ nút bấm */
+    #status, #power-wrap, #reel-wrap, #catch-modal, #toast-wrap { pointer-events: none; }
+    #catch-modal .btn, #topbar .btn { pointer-events: auto; }
+
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-thumb { background: rgba(120, 200, 255, 0.3); border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <canvas id="game-canvas"></canvas>
+
+  <div id="loading">
+    <h1>CÂU CÁ 3D</h1>
+    <p>Đang chuẩn bị mặt hồ...</p>
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Top bar -->
+  <div class="panel" id="topbar">
+    <h1>🎣 CÂU CÁ 3D</h1>
+    <div class="stat"><span class="label">Điểm</span><span class="value" id="stat-score">0</span></div>
+    <div class="stat"><span class="label">Số cá</span><span class="value" id="stat-count">0</span></div>
+    <div class="stat"><span class="label">Kỷ lục</span><span class="value" id="stat-best">—</span></div>
+    <div class="spacer"></div>
+    <button class="btn" id="btn-collection">📖 Sổ tay</button>
+    <button class="btn" id="btn-sound">🔊 Âm thanh</button>
+  </div>
+
+  <!-- Status -->
+  <div class="panel" id="status"></div>
+
+  <!-- Power bar -->
+  <div class="panel" id="power-wrap">
+    <div class="label">Sức ném — giữ chuột trái, thả để quăng</div>
+    <div class="bar-track"><div class="bar-fill" id="power-fill"></div></div>
+  </div>
+
+  <!-- Reeling HUD -->
+  <div class="panel" id="reel-wrap">
+    <div class="row">
+      <div class="label"><span>⚠️ Độ căng dây</span><span id="tension-text">0%</span></div>
+      <div class="bar-track"><div class="bar-fill" id="tension-fill"></div></div>
+    </div>
+    <div class="row">
+      <div class="label"><span>🎣 Khoảng cách</span><span id="distance-text">0 m</span></div>
+      <div class="bar-track"><div class="bar-fill" id="distance-fill"></div></div>
+    </div>
+    <div class="row">
+      <div class="label"><span>💪 Sức cá</span><span id="stamina-text">100%</span></div>
+      <div class="bar-track"><div class="bar-fill" id="stamina-fill"></div></div>
+    </div>
+    <div class="label" style="justify-content:center; margin-top:10px; letter-spacing:.5px;">
+      <span id="reel-hint">GIỮ chuột trái để kéo — THẢ ra khi dây căng đỏ!</span>
+    </div>
+  </div>
+
+  <!-- Catch modal -->
+  <div class="panel" id="catch-modal">
+    <div class="caught-label">— Câu được —</div>
+    <div class="fish-name" id="modal-name">Cá Chép</div>
+    <div class="fish-rarity" id="modal-rarity">Thường</div>
+    <div class="fish-stats">
+      <div class="s"><div class="k">Cân nặng</div><div class="v" id="modal-weight">2.4 kg</div></div>
+      <div class="s"><div class="k">Chiều dài</div><div class="v" id="modal-length">45 cm</div></div>
+      <div class="s"><div class="k">Điểm</div><div class="v" id="modal-points">+120</div></div>
+    </div>
+    <div class="fish-desc" id="modal-desc"></div>
+    <button class="btn" id="btn-continue" style="width:100%; padding:12px; font-size:15px;">Tiếp tục câu →</button>
+  </div>
+
+  <!-- Collection -->
+  <div class="panel" id="collection">
+    <h2>📖 Sổ tay câu cá</h2>
+    <div id="collection-list"></div>
+  </div>
+
+  <!-- Help -->
+  <div class="panel" id="help">
+    <b>Cách chơi:</b><br/>
+    <span class="key">Giữ Chuột trái</span> nạp lực → <span class="key">Thả</span> để quăng câu<br/>
+    <span class="key">Chuột phải</span> kéo để nhìn quanh<br/>
+    <span class="key">A</span><span class="key">D</span> xoay, <span class="key">W</span><span class="key">S</span> ngẩng/cúi<br/>
+    Khi phao chìm → <span class="key">Click</span> ngay để giật câu!<br/>
+    Giữ chuột để kéo cá, thả khi dây căng đỏ.
+  </div>
+
+  <!-- Toasts -->
+  <div id="toast-wrap"></div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
