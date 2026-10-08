@@ -27,17 +27,13 @@ npx expo start --web
 ```
 
 Mở địa chỉ `http://localhost:8081` trên trình duyệt.
+(Khi chạy trong môi trường sandbox/preview, dùng `node dev-proxy.js` — app mở tại `http://localhost:8080`.)
 
-> **Lưu ý trên trình duyệt (web):** trình duyệt không dùng được SQLite native của Android,
-> nên app tự động chọn engine SQLite chạy bằng WebAssembly — không phải cài thêm gì:
->
-> - Trang **cross-origin isolated** (mở tab riêng + có header `Cross-Origin-Opener-Policy`/
->   `Cross-Origin-Embedder-Policy` — chạy `node dev-proxy.js` để proxy tự thêm, port `8080`):
->   engine **expo-sqlite + OPFS**.
-> - Mọi trường hợp còn lại (mở trong iframe, `http://` thường...): engine **sql.js + IndexedDB**.
->
-> Cả hai đều lưu dữ liệu ngay trong trình duyệt và **giữ lại khi tắt trình duyệt**.
-> Dữ liệu web tách riêng với dữ liệu trên điện thoại (dùng Google Sheets để đồng bộ, xem mục sau).
+> **Lưu ý trên trình duyệt (web):** trình duyệt không có SQLite native như Android,
+> nên app dùng **SQLite chạy bằng WebAssembly (sql.js)** và **lưu dữ liệu trong trình
+> duyệt (IndexedDB)**. Dữ liệu web tách riêng với dữ liệu trên điện thoại —
+> dùng Google Sheets (mục sau) để đồng bộ giữa các thiết bị.
+> Dữ liệu web giữ lại khi tắt trình duyệt (mất nếu xóa dữ liệu trình duyệt).
 
 ### 2. Chạy thử trên điện thoại Android (Expo Go)
 

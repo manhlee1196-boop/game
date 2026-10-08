@@ -1,9 +1,9 @@
 // Dev proxy cho preview web:
-// Thêm header Cross-Origin-Opener-Policy + Cross-Origin-Embedder-Policy
-// để trang được "cross-origin isolated" — yêu cầu bắt buộc của expo-sqlite trên web
-// (SharedArrayBuffer cho lệnh đồng bộ + SyncAccessHandle cho lưu trữ OPFS).
+// Expo `--host localhost` trong môi trường sandbox bind trên IPv6 ::1, không expose
+// ra ngoài được. Proxy này lắng nghe 0.0.0.0:8080 và chuyển tiếp (HTTP + WebSocket)
+// tới ::1:8081, giúp preview web hoạt động.
 //
-// Chạy: node dev-proxy.js  (tự khởi động Expo dev server ở 127.0.0.1:8081)
+// Chạy: node dev-proxy.js  (tự khởi động Expo dev server ở ::1:8081)
 const http = require('http');
 const net = require('net');
 const { spawn } = require('child_process');
@@ -13,7 +13,7 @@ const PROXY_PORT = 8080;
 const UPSTREAM_HOST = '::1';
 const UPSTREAM_PORT = 8081;
 
-// Khởi động Expo dev server (chỉ lắng nghe 127.0.0.1 — chỉ proxy mới expose ra ngoài)
+// Khởi động Expo dev server (chỉ localhost — chỉ proxy expose ra ngoài)
 const expo = spawn(
   'npx',
   ['expo', 'start', '--web', '--port', String(UPSTREAM_PORT), '--host', 'localhost'],
@@ -33,10 +33,7 @@ const server = http.createServer((req, res) => {
   const proxyReq = http.request(
     { host: UPSTREAM_HOST, port: UPSTREAM_PORT, method: req.method, path: req.url, headers: req.headers },
     (proxyRes) => {
-      const outHeaders = { ...proxyRes.headers };
-      outHeaders['cross-origin-opener-policy'] = 'same-origin';
-      outHeaders['cross-origin-embedder-policy'] = 'require-corp';
-      res.writeHead(proxyRes.statusCode, outHeaders);
+      res.writeHead(proxyRes.statusCode, proxyRes.headers);
       proxyRes.pipe(res);
     }
   );
@@ -67,5 +64,5 @@ server.on('upgrade', (req, socket, head) => {
 });
 
 server.listen(PROXY_PORT, '0.0.0.0', () => {
-  console.log(`[proxy] COOP/COEP proxy sẵn sàng trên 0.0.0.0:${PROXY_PORT} -> ${UPSTREAM_HOST}:${UPSTREAM_PORT}`);
+  console.log(`[proxy] Web proxy sẵn sàng trên 0.0.0.0:${PROXY_PORT} -> [${UPSTREAM_HOST}]:${UPSTREAM_PORT}`);
 });
