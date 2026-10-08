@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, Alert, Pressable } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useSQLiteContext } from 'expo-sqlite';
+import { useDb } from '../src/store';
 import { Header, Input, Button } from '../src/components/ui';
 import { getCustomer, saveCustomer, deleteCustomer } from '../src/api';
 import { colors } from '../src/theme';
 
 export default function CustomerEditScreen() {
-  const db = useSQLiteContext();
+  const db = useDb();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const existing = id ? getCustomer(db, id) : null;

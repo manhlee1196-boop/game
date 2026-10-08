@@ -1,20 +1,20 @@
 // ===== Đồng bộ với Google Sheets (qua Google Apps Script web app) =====
-import type { SQLiteDatabase } from 'expo-sqlite';
+import type { DbLike } from './db';
 import {
   listProducts, listCustomers, listAllInvoices, listAllInvoiceItems,
 } from './api';
 import { getMeta, setMeta } from './db';
 import { nowIso, fmtDateTime } from './utils';
 
-export function getSyncUrl(db: SQLiteDatabase): string {
+export function getSyncUrl(db: DbLike): string {
   return getMeta(db, 'sync_url') || '';
 }
 
-export function setSyncUrl(db: SQLiteDatabase, url: string): void {
+export function setSyncUrl(db: DbLike, url: string): void {
   setMeta(db, 'sync_url', url.trim());
 }
 
-export function getLastSyncAt(db: SQLiteDatabase): string {
+export function getLastSyncAt(db: DbLike): string {
   return getMeta(db, 'last_sync_at') || '';
 }
 
@@ -24,7 +24,7 @@ export interface SyncResult {
 }
 
 /** Đồng bộ 2 chiều: push toàn bộ dữ liệu lên Sheet, sau đó pull về và gộp */
-export async function syncNow(db: SQLiteDatabase, opts: { push?: boolean; pull?: boolean } = {}): Promise<SyncResult> {
+export async function syncNow(db: DbLike, opts: { push?: boolean; pull?: boolean } = {}): Promise<SyncResult> {
   const url = getSyncUrl(db);
   if (!url) {
     return { ok: false, message: 'Chưa có địa chỉ Google Sheets. Vào Cài đặt → Đồng bộ Google Sheets để cấu hình.' };
@@ -48,13 +48,13 @@ export async function syncNow(db: SQLiteDatabase, opts: { push?: boolean; pull?:
 
 // ---------- PUSH: app -> Sheets ----------
 
-function collectMeta(db: SQLiteDatabase): Array<{ key: string; value: string; updatedAt: string }> {
+function collectMeta(db: DbLike): Array<{ key: string; value: string; updatedAt: string }> {
   return db.getAllSync<any>('SELECT key, value, updated_at FROM meta').map((r) => ({
     key: r.key, value: r.value, updatedAt: r.updated_at,
   }));
 }
 
-async function pushToSheets(url: string, db: SQLiteDatabase): Promise<number> {
+async function pushToSheets(url: string, db: DbLike): Promise<number> {
   const payload = {
     op: 'push',
     products: listProducts(db, undefined, true),
@@ -78,7 +78,7 @@ async function pushToSheets(url: string, db: SQLiteDatabase): Promise<number> {
 // ---------- PULL: Sheets -> app ----------
 // Dữ liệu nhận về từ Apps Script đã được chuyển về camelCase.
 
-async function pullFromSheets(url: string, db: SQLiteDatabase): Promise<number> {
+async function pullFromSheets(url: string, db: DbLike): Promise<number> {
   const sep = url.includes('?') ? '&' : '?';
   const res = await fetch(url + sep + 'op=pull');
   const json = await res.json().catch(() => null);
@@ -102,7 +102,7 @@ function isNewer(localTime: string | null, remoteTime: string): boolean {
   return (remoteTime || '') > localTime; // chuỗi ISO so được theo từ điển
 }
 
-function mergeProducts(t: SQLiteDatabase, rows: any[]): number {
+function mergeProducts(t: DbLike, rows: any[]): number {
   let n = 0;
   for (const r of rows) {
     if (!r.id) continue;
@@ -125,7 +125,7 @@ function mergeProducts(t: SQLiteDatabase, rows: any[]): number {
   return n;
 }
 
-function mergeCustomers(t: SQLiteDatabase, rows: any[]): number {
+function mergeCustomers(t: DbLike, rows: any[]): number {
   let n = 0;
   for (const r of rows) {
     if (!r.id) continue;
@@ -144,7 +144,7 @@ function mergeCustomers(t: SQLiteDatabase, rows: any[]): number {
   return n;
 }
 
-function mergeInvoices(t: SQLiteDatabase, rows: any[]): number {
+function mergeInvoices(t: DbLike, rows: any[]): number {
   let n = 0;
   for (const r of rows) {
     if (!r.id) continue;
@@ -170,7 +170,7 @@ function mergeInvoices(t: SQLiteDatabase, rows: any[]): number {
   return n;
 }
 
-function mergeItems(t: SQLiteDatabase, rows: any[]): number {
+function mergeItems(t: DbLike, rows: any[]): number {
   let n = 0;
   for (const r of rows) {
     if (!r.id) continue;
@@ -192,7 +192,7 @@ function mergeItems(t: SQLiteDatabase, rows: any[]): number {
   return n;
 }
 
-function mergeMeta(t: SQLiteDatabase, rows: any[]): number {
+function mergeMeta(t: DbLike, rows: any[]): number {
   let n = 0;
   for (const r of rows) {
     if (!r.key) continue;

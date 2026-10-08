@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { View, Text, ScrollView, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useSQLiteContext } from 'expo-sqlite';
+import { useDb } from '../src/store';
 import { Header, Card, Button, RowKV, Input } from '../src/components/ui';
 import { getInvoice, getInvoiceItems, deleteInvoice } from '../src/api';
 import { getMeta } from '../src/db';
@@ -10,7 +10,7 @@ import { colors, radius } from '../src/theme';
 import { shareInvoicePdf, saveInvoicePdf } from '../src/share';
 
 export default function InvoiceDetailScreen() {
-  const db = useSQLiteContext();
+  const db = useDb();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const [tick, setTick] = useState(0);

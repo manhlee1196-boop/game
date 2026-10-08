@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, Alert, Pressable } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useSQLiteContext } from 'expo-sqlite';
+import { useDb } from '../src/store';
 import { Header, Input, Button, Chip } from '../src/components/ui';
 import { getProduct, saveProduct, deleteProduct, listInvoices } from '../src/api';
 import { parseNum, fmtNumInput } from '../src/utils';
@@ -10,7 +10,7 @@ import { colors } from '../src/theme';
 const UNITS = ['cái', 'hộp', 'gói', 'chai', 'kg', 'lốc', 'túi', 'thùng', 'vỉ', 'bánh', 'lọ'];
 
 export default function ProductEditScreen() {
-  const db = useSQLiteContext();
+  const db = useDb();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const existing = id ? getProduct(db, id) : null;

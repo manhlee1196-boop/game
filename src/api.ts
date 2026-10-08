@@ -1,5 +1,5 @@
 // ===== Thao tác dữ liệu (CRUD) trên SQLite =====
-import type { SQLiteDatabase } from 'expo-sqlite';
+import type { DbLike } from './db';
 import type { Product, Customer, Invoice, InvoiceItem } from './types';
 import { uid, nowIso, round2 } from './utils';
 import { getMeta, setMeta } from './db';
@@ -41,7 +41,7 @@ function mapItem(r: any): InvoiceItem {
 
 // ---------- Sản phẩm ----------
 
-export function listProducts(db: SQLiteDatabase, q?: string, includeDeleted = false): Product[] {
+export function listProducts(db: DbLike, q?: string, includeDeleted = false): Product[] {
   const like = q && q.trim() ? `%${q.trim()}%` : null;
   const where = like ? "deleted = 0 AND (name LIKE ? OR sku LIKE ? OR category LIKE ?)" : 'deleted = 0';
   const params: any[] = like ? [like, like, like] : [];
@@ -56,12 +56,12 @@ export function listProducts(db: SQLiteDatabase, q?: string, includeDeleted = fa
   return rows.map(mapProduct);
 }
 
-export function getProduct(db: SQLiteDatabase, id: string): Product | null {
+export function getProduct(db: DbLike, id: string): Product | null {
   const r = db.getFirstSync<any>('SELECT * FROM products WHERE id = ?', id);
   return r ? mapProduct(r) : null;
 }
 
-export function saveProduct(db: SQLiteDatabase, p: Partial<Product> & { name: string }): Product {
+export function saveProduct(db: DbLike, p: Partial<Product> & { name: string }): Product {
   const now = nowIso();
   const id = p.id || uid();
   db.runSync(
@@ -77,13 +77,13 @@ export function saveProduct(db: SQLiteDatabase, p: Partial<Product> & { name: st
   return getProduct(db, id)!;
 }
 
-export function deleteProduct(db: SQLiteDatabase, id: string): void {
+export function deleteProduct(db: DbLike, id: string): void {
   db.runSync('UPDATE products SET deleted = 1, updated_at = ? WHERE id = ?', [nowIso(), id]);
 }
 
 // ---------- Khách hàng ----------
 
-export function listCustomers(db: SQLiteDatabase, q?: string, includeDeleted = false): Customer[] {
+export function listCustomers(db: DbLike, q?: string, includeDeleted = false): Customer[] {
   const like = q && q.trim() ? `%${q.trim()}%` : null;
   const where = like ? "deleted = 0 AND (name LIKE ? OR phone LIKE ?)" : 'deleted = 0';
   const params: any[] = like ? [like, like] : [];
@@ -98,12 +98,12 @@ export function listCustomers(db: SQLiteDatabase, q?: string, includeDeleted = f
   return rows.map(mapCustomer);
 }
 
-export function getCustomer(db: SQLiteDatabase, id: string): Customer | null {
+export function getCustomer(db: DbLike, id: string): Customer | null {
   const r = db.getFirstSync<any>('SELECT * FROM customers WHERE id = ?', id);
   return r ? mapCustomer(r) : null;
 }
 
-export function saveCustomer(db: SQLiteDatabase, c: Partial<Customer> & { name: string }): Customer {
+export function saveCustomer(db: DbLike, c: Partial<Customer> & { name: string }): Customer {
   const now = nowIso();
   const id = c.id || uid();
   db.runSync(
@@ -116,34 +116,34 @@ export function saveCustomer(db: SQLiteDatabase, c: Partial<Customer> & { name: 
   return getCustomer(db, id)!;
 }
 
-export function deleteCustomer(db: SQLiteDatabase, id: string): void {
+export function deleteCustomer(db: DbLike, id: string): void {
   db.runSync('UPDATE customers SET deleted = 1, updated_at = ? WHERE id = ?', [nowIso(), id]);
 }
 
 // ---------- Hóa đơn ----------
 
-export function listInvoices(db: SQLiteDatabase, limit = 200): Invoice[] {
+export function listInvoices(db: DbLike, limit = 200): Invoice[] {
   return db
     .getAllSync<any>('SELECT * FROM invoices WHERE deleted = 0 ORDER BY created_at DESC, rowid DESC LIMIT ?', limit)
     .map(mapInvoice);
 }
 
-export function getInvoice(db: SQLiteDatabase, id: string): Invoice | null {
+export function getInvoice(db: DbLike, id: string): Invoice | null {
   const r = db.getFirstSync<any>('SELECT * FROM invoices WHERE id = ?', id);
   return r ? mapInvoice(r) : null;
 }
 
-export function getInvoiceItems(db: SQLiteDatabase, invoiceId: string): InvoiceItem[] {
+export function getInvoiceItems(db: DbLike, invoiceId: string): InvoiceItem[] {
   return db
     .getAllSync<any>('SELECT * FROM invoice_items WHERE invoice_id = ? ORDER BY rowid', invoiceId)
     .map(mapItem);
 }
 
-export function listAllInvoices(db: SQLiteDatabase): Invoice[] {
+export function listAllInvoices(db: DbLike): Invoice[] {
   return db.getAllSync<any>('SELECT * FROM invoices').map(mapInvoice);
 }
 
-export function listAllInvoiceItems(db: SQLiteDatabase): InvoiceItem[] {
+export function listAllInvoiceItems(db: DbLike): InvoiceItem[] {
   return db.getAllSync<any>('SELECT * FROM invoice_items').map(mapItem);
 }
 
@@ -156,7 +156,7 @@ export interface CreateInvoiceArgs {
 }
 
 /** Tạo hóa đơn: ghi hóa đơn + chi tiết + giảm tồn kho + tăng số thứ tự */
-export async function createInvoice(db: SQLiteDatabase, args: CreateInvoiceArgs): Promise<Invoice> {
+export async function createInvoice(db: DbLike, args: CreateInvoiceArgs): Promise<Invoice> {
   if (!args.lines.length) throw new Error('Hóa đơn chưa có sản phẩm');
   const now = nowIso();
   const seq = parseInt(getMeta(db, 'next_invoice_no') || '1', 10) || 1;
@@ -200,7 +200,7 @@ export async function createInvoice(db: SQLiteDatabase, args: CreateInvoiceArgs)
 }
 
 /** Xóa hóa đơn (mềm), có thể khôi phục tồn kho */
-export async function deleteInvoice(db: SQLiteDatabase, id: string, restoreStock: boolean): Promise<void> {
+export async function deleteInvoice(db: DbLike, id: string, restoreStock: boolean): Promise<void> {
   const items = getInvoiceItems(db, id);
   const now = nowIso();
   await db.withTransactionAsync(async () => {
@@ -226,7 +226,7 @@ export interface SalesSummary {
   profit: number; // lãi gộp
 }
 
-export function salesSummary(db: SQLiteDatabase, from: Date | null, to: Date | null): SalesSummary {
+export function salesSummary(db: DbLike, from: Date | null, to: Date | null): SalesSummary {
   const where: string[] = [];
   const params: any[] = [];
   if (from) { where.push('i.created_at >= ?'); params.push(from.toISOString()); }
@@ -258,7 +258,7 @@ export interface TopProductRow {
   revenue: number;
 }
 
-export function topProducts(db: SQLiteDatabase, from: Date | null, to: Date | null, limit = 10): TopProductRow[] {
+export function topProducts(db: DbLike, from: Date | null, to: Date | null, limit = 10): TopProductRow[] {
   const where: string[] = [];
   const params: any[] = [];
   if (from) { where.push('i.created_at >= ?'); params.push(from.toISOString()); }
@@ -284,7 +284,7 @@ export interface StockStats {
   lowCount: number;
 }
 
-export function stockStats(db: SQLiteDatabase): StockStats {
+export function stockStats(db: DbLike): StockStats {
   const row = db.getFirstSync<any>(
     `SELECT COUNT(*) AS c,
       COALESCE(SUM(stock * cost_price),0) AS cv,
@@ -295,7 +295,7 @@ export function stockStats(db: SQLiteDatabase): StockStats {
   return { count: row?.c || 0, costValue: +row?.cv || 0, saleValue: +row?.sv || 0, lowCount: +row?.low || 0 };
 }
 
-export function lowStockProducts(db: SQLiteDatabase, limit = 20): Product[] {
+export function lowStockProducts(db: DbLike, limit = 20): Product[] {
   return db
     .getAllSync<any>('SELECT * FROM products WHERE deleted = 0 AND stock <= min_stock ORDER BY stock ASC LIMIT ?', limit)
     .map(mapProduct);

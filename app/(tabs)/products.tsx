@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { View, Text, FlatList, TextInput, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { useSQLiteContext } from 'expo-sqlite';
+import { useDb } from '../../src/store';
 import { Ionicons } from '@expo/vector-icons';
 import { Card, StockBadge, EmptyState } from '../../src/components/ui';
 import { listProducts } from '../../src/api';
@@ -11,7 +11,7 @@ import { colors, radius } from '../../src/theme';
 import type { Product } from '../../src/types';
 
 export default function ProductsScreen() {
-  const db = useSQLiteContext();
+  const db = useDb();
   const router = useRouter();
   const [q, setQ] = useState('');
   const [tick, setTick] = useState(0);

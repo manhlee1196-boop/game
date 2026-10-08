@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { useSQLiteContext } from 'expo-sqlite';
+import { useDb } from '../../src/store';
 import { Ionicons } from '@expo/vector-icons';
 import { Card, Stat, Button } from '../../src/components/ui';
 import { listProducts, listInvoices, stockStats } from '../../src/api';
@@ -14,7 +14,7 @@ import { getMeta, setMeta } from '../../src/db';
 import { syncNow } from '../../src/sync';
 
 export default function HomeScreen() {
-  const db = useSQLiteContext();
+  const db = useDb();
   const router = useRouter();
   const [tick, setTick] = useState(0);
   const [syncing, setSyncing] = useState(false);

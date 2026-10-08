@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { View, Text, FlatList, TextInput, Pressable, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { useSQLiteContext } from 'expo-sqlite';
+import { useDb } from '../../src/store';
 import { Ionicons } from '@expo/vector-icons';
 import { Card, Button, Input, Chip, ModalSheet, EmptyState } from '../../src/components/ui';
 import { listProducts, listCustomers, getCustomer, createInvoice } from '../../src/api';
@@ -16,7 +16,7 @@ import { getInvoiceItems } from '../../src/api';
 const VAT_RATES = [0, 5, 8, 10];
 
 export default function SellScreen() {
-  const db = useSQLiteContext();
+  const db = useDb();
   const router = useRouter();
   const [q, setQ] = useState('');
   const [tick, setTick] = useState(0);

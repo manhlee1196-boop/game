@@ -1,13 +1,12 @@
 import React from 'react';
 import { Stack } from 'expo-router';
-import { SQLiteProvider } from 'expo-sqlite';
 import { StatusBar } from 'expo-status-bar';
-import { initDb } from '../src/db';
+import { DataProvider } from '../src/store';
 import { colors } from '../src/theme';
 
 export default function RootLayout() {
   return (
-    <SQLiteProvider databaseName="kho.db" onInit={initDb}>
+    <DataProvider>
       <StatusBar style="dark" />
       <Stack
         screenOptions={{
@@ -22,6 +21,6 @@ export default function RootLayout() {
         <Stack.Screen name="reports" options={{ presentation: 'modal' }} />
         <Stack.Screen name="settings" options={{ presentation: 'modal' }} />
       </Stack>
-    </SQLiteProvider>
+    </DataProvider>
   );
 }

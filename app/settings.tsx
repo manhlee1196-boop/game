@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, Alert, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useSQLiteContext } from 'expo-sqlite';
+import { useDb } from '../src/store';
 import { Ionicons } from '@expo/vector-icons';
 import { Header, Card, Button, Input, Chip } from '../src/components/ui';
 import { getMeta, setMeta, resetAllData } from '../src/db';
@@ -12,7 +12,7 @@ import { colors } from '../src/theme';
 const VAT_RATES = [0, 5, 8, 10];
 
 export default function SettingsScreen() {
-  const db = useSQLiteContext();
+  const db = useDb();
   const router = useRouter();
 
   const [shopName, setShopName] = useState(getMeta(db, 'shop_name') || '');

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useSQLiteContext } from 'expo-sqlite';
+import { useDb } from '../src/store';
 import { Ionicons } from '@expo/vector-icons';
 import { Header, Card, Stat, Chip, EmptyState } from '../src/components/ui';
 import { salesSummary, topProducts, stockStats, lowStockProducts } from '../src/api';
@@ -12,7 +12,7 @@ import type { ReportPeriod } from '../src/types';
 const PERIODS: ReportPeriod[] = ['today', '7d', 'month', 'year', 'all'];
 
 export default function ReportsScreen() {
-  const db = useSQLiteContext();
+  const db = useDb();
   const router = useRouter();
   const [period, setPeriod] = useState<ReportPeriod>('7d');
 

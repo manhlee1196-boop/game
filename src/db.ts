@@ -1,6 +1,17 @@
 // ===== Khởi tạo database + dữ liệu mẫu =====
-import type { SQLiteDatabase } from 'expo-sqlite';
 import { uid, nowIso } from './utils';
+
+/**
+ * Giao diện DB dùng chung cho toàn app — hoạt động với cả
+ * SQLiteDatabase (expo-sqlite) và WebSqlDatabase (sql.js fallback trên web).
+ */
+export interface DbLike {
+  execSync(source: string): void;
+  runSync(source: string, ...params: any[]): { changes: number; lastInsertRowId: number };
+  getAllSync<T = any>(source: string, ...params: any[]): T[];
+  getFirstSync<T = any>(source: string, ...params: any[]): T | null;
+  withTransactionAsync(task: (txn?: any) => Promise<void>): Promise<void>;
+}
 
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS products (
@@ -69,14 +80,14 @@ CREATE TABLE IF NOT EXISTS meta (
 );
 `;
 
-/** Khởi tạo (gọi trong onInit của SQLiteProvider) */
-export async function initDb(db: SQLiteDatabase): Promise<void> {
+/** Khởi tạo schema + dữ liệu mặc định */
+export async function initDb(db: DbLike): Promise<void> {
   db.execSync(SCHEMA);
   ensureDefaultMeta(db);
   seedIfEmpty(db);
 }
 
-function ensureDefaultMeta(db: SQLiteDatabase): void {
+function ensureDefaultMeta(db: DbLike): void {
   const defaults: Record<string, string> = {
     shop_name: 'Cửa hàng của tôi',
     shop_address: '',
@@ -98,7 +109,7 @@ function ensureDefaultMeta(db: SQLiteDatabase): void {
 }
 
 /** Dữ liệu mẫu khi chạy lần đầu (xóa được) */
-function seedIfEmpty(db: SQLiteDatabase): void {
+function seedIfEmpty(db: DbLike): void {
   const flag = getMeta(db, 'seeded');
   if (flag === '1') return;
   const row = db.getFirstSync<{ c: number }>('SELECT COUNT(*) AS c FROM products');
@@ -136,13 +147,13 @@ function seedIfEmpty(db: SQLiteDatabase): void {
 }
 
 /** Đọc 1 giá trị meta */
-export function getMeta(db: SQLiteDatabase, key: string): string | null {
+export function getMeta(db: DbLike, key: string): string | null {
   const row = db.getFirstSync<{ v: string }>('SELECT value AS v FROM meta WHERE key = ?', key);
   return row ? row.v : null;
 }
 
 /** Ghi giá trị meta */
-export function setMeta(db: SQLiteDatabase, key: string, value: string): void {
+export function setMeta(db: DbLike, key: string, value: string): void {
   const now = nowIso();
   db.runSync(
     'INSERT INTO meta (key, value, updated_at) VALUES (?, ?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at',
@@ -151,7 +162,7 @@ export function setMeta(db: SQLiteDatabase, key: string, value: string): void {
 }
 
 /** Xóa toàn bộ dữ liệu, giữ cấu hình */
-export function resetAllData(db: SQLiteDatabase): void {
+export function resetAllData(db: DbLike): void {
   db.execSync('DELETE FROM invoice_items; DELETE FROM invoices; DELETE FROM products; DELETE FROM customers;');
   db.runSync('UPDATE meta SET value = ?, updated_at = ? WHERE key IN (\'next_invoice_no\', \'seeded\')', ['1', nowIso()]);
 }

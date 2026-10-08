@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { View, Text, FlatList, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { useSQLiteContext } from 'expo-sqlite';
+import { useDb } from '../../src/store';
 import { Ionicons } from '@expo/vector-icons';
 import { Card, EmptyState } from '../../src/components/ui';
 import { listInvoices } from '../../src/api';
@@ -10,7 +10,7 @@ import { fmtMoney, fmtDateTime } from '../../src/utils';
 import { colors, radius } from '../../src/theme';
 
 export default function InvoicesScreen() {
-  const db = useSQLiteContext();
+  const db = useDb();
   const router = useRouter();
   const [tick, setTick] = useState(0);
   const [q, setQ] = useState('');
