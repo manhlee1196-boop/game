@@ -49,6 +49,16 @@ function WebFallback({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  // Lưu ngay khi đóng/tab ẩn trang (tránh mất dữ liệu trong thời gian debounce)
+  useEffect(() => {
+    if (!db || typeof window === 'undefined') return;
+    const onUnload = () => {
+      void db.flush?.();
+    };
+    window.addEventListener('pagehide', onUnload);
+    return () => window.removeEventListener('pagehide', onUnload);
+  }, [db]);
+
   if (error) throw error;
   if (!db) {
     return (

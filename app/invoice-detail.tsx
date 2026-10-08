@@ -39,14 +39,16 @@ export default function InvoiceDetailScreen() {
 
   const doShare = async () => {
     try {
+      await db.flush?.();
       await shareInvoicePdf(inv, items, shop);
     } catch (e: any) {
       setMsg('Lỗi tạo PDF: ' + (e?.message || e));
     }
   };
 
-  const doSave = () => {
+  const doSave = async () => {
     try {
+      await db.flush?.();
       const { fileName } = saveInvoicePdf(inv, items, shop);
       setMsg(`Đã lưu file "${fileName}" vào thư mục tài liệu của app.`);
     } catch (e: any) {

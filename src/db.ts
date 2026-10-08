@@ -11,6 +11,8 @@ export interface DbLike {
   getAllSync<T = any>(source: string, ...params: any[]): T[];
   getFirstSync<T = any>(source: string, ...params: any[]): T | null;
   withTransactionAsync(task: (txn?: any) => Promise<void>): Promise<void>;
+  /** Chế độ web (sql.js + IndexedDB): lưu ngay dữ liệu — gọi trước khi xuất PDF/đóng trang. */
+  flush?: () => Promise<void>;
 }
 
 const SCHEMA = `
