@@ -1,7 +1,8 @@
 // Bọc babel-transformer mặc định của Expo:
-// - File .wasm: chuyển nội dung nhị phân thành module JS xuất chuỗi data URI (base64),
-//   rồi để pipeline Babel xử lý như một file JS bình thường.
+// - File .wasm: ĐỌC TRỰC TIẾP TỪ ĐĨA (bỏ qua args.src — chuỗi trong pipeline
+//   đã bị chuyển mã UTF-8 làm hỏng byte nhị phân), nhúng vào module JS dạng data URI.
 // - Mọi file khác: chuyển tiếp nguyên vẹn.
+const fs = require('fs');
 const path = require('path');
 
 const expoPkgPath = require.resolve('expo/package.json');
@@ -16,8 +17,9 @@ function isWasm(filename) {
 module.exports = {
   transform(args) {
     if (isWasm(args.filename)) {
-      const raw = args.src;
-      const b64 = Buffer.isBuffer(raw) ? raw.toString('base64') : Buffer.from(String(raw)).toString('base64');
+      // Đọc byte gốc từ đĩa để giữ nguyên nhị phân
+      const raw = fs.readFileSync(args.filename);
+      const b64 = raw.toString('base64');
       const js = `module.exports = "data:application/wasm;base64,${b64}";\n`;
       return defaultTransformer.transform({ ...args, src: js });
     }
