@@ -86,7 +86,7 @@ android/app/build/outputs/apk/debug/app-debug.apk
 Repo có sẵn workflow **Build APK (Android)** (`.github/workflows/build-apk.yml`).
 Để dùng được cần 2 điều:
 
-1. Nhánh `arena/82ee54d1-game` được **merge vào `main`** (GitHub chỉ nhận
+1. Nhánh `arena/b82602a5-game` được **merge vào `main`** (GitHub chỉ nhận
    workflow nằm trên nhánh mặc định).
 2. Repo bật GitHub Actions (Settings → Actions → General → *Allow all
    actions and workflows*).
