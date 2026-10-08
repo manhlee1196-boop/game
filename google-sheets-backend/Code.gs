@@ -28,7 +28,7 @@ var SHEETS = {
   products: {
     tab: 'Products',
     idField: 'id',
-    headers: ['id', 'name', 'sku', 'category', 'unit', 'costPrice', 'salePrice', 'stock', 'minStock', 'note', 'updatedAt', 'deleted']
+    headers: ['id', 'name', 'sku', 'barcode', 'category', 'unit', 'costPrice', 'salePrice', 'stock', 'minStock', 'note', 'updatedAt', 'deleted']
   },
   customers: {
     tab: 'Customers',

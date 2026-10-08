@@ -8,7 +8,7 @@ import { getMeta, setMeta } from './db';
 
 function mapProduct(r: any): Product {
   return {
-    id: r.id, name: r.name, sku: r.sku || '', category: r.category || '',
+    id: r.id, name: r.name, sku: r.sku || '', barcode: r.barcode || '', category: r.category || '',
     unit: r.unit || 'cái', costPrice: +r.cost_price || 0, salePrice: +r.sale_price || 0,
     stock: +r.stock || 0, minStock: +r.min_stock || 0, note: r.note || '',
     updatedAt: r.updated_at, deleted: r.deleted,
@@ -65,16 +65,28 @@ export function saveProduct(db: DbLike, p: Partial<Product> & { name: string }):
   const now = nowIso();
   const id = p.id || uid();
   db.runSync(
-    `INSERT INTO products (id, name, sku, category, unit, cost_price, sale_price, stock, min_stock, note, updated_at, deleted)
-     VALUES (?,?,?,?,?,?,?,?,?,?,?,0)
+    `INSERT INTO products (id, name, sku, barcode, category, unit, cost_price, sale_price, stock, min_stock, note, updated_at, deleted)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,0)
      ON CONFLICT(id) DO UPDATE SET
-       name=excluded.name, sku=excluded.sku, category=excluded.category, unit=excluded.unit,
+       name=excluded.name, sku=excluded.sku, barcode=excluded.barcode, category=excluded.category,
+       unit=excluded.unit,
        cost_price=excluded.cost_price, sale_price=excluded.sale_price, stock=excluded.stock,
        min_stock=excluded.min_stock, note=excluded.note, updated_at=excluded.updated_at, deleted=0`,
-    [id, p.name, p.sku || '', p.category || '', p.unit || 'cái',
+    [id, p.name, p.sku || '', p.barcode || '', p.category || '', p.unit || 'cái',
      p.costPrice || 0, p.salePrice || 0, p.stock || 0, p.minStock || 0, p.note || '', now]
   );
   return getProduct(db, id)!;
+}
+
+/** Tìm sản phẩm theo mã vạch (hoặc mã hàng) — dùng khi quét mã */
+export function findProductByBarcode(db: DbLike, code: string): Product | null {
+  const c = String(code || '').trim();
+  if (!c) return null;
+  const r = db.getFirstSync<any>(
+    'SELECT * FROM products WHERE deleted = 0 AND (barcode = ? OR sku = ?) LIMIT 1',
+    c, c
+  );
+  return r ? mapProduct(r) : null;
 }
 
 export function deleteProduct(db: DbLike, id: string): void {

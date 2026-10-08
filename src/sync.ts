@@ -109,13 +109,14 @@ function mergeProducts(t: DbLike, rows: any[]): number {
     const local = t.getFirstSync<{ u: string }>('SELECT updated_at FROM products WHERE id = ? LIMIT 1', r.id);
     if (isNewer(local?.u || null, r.updatedAt || '')) {
       t.runSync(
-        `INSERT INTO products (id, name, sku, category, unit, cost_price, sale_price, stock, min_stock, note, updated_at, deleted)
-         VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
-         ON CONFLICT(id) DO UPDATE SET name=excluded.name, sku=excluded.sku, category=excluded.category,
+        `INSERT INTO products (id, name, sku, barcode, category, unit, cost_price, sale_price, stock, min_stock, note, updated_at, deleted)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+         ON CONFLICT(id) DO UPDATE SET name=excluded.name, sku=excluded.sku, barcode=excluded.barcode,
+           category=excluded.category,
            unit=excluded.unit, cost_price=excluded.cost_price, sale_price=excluded.sale_price,
            stock=excluded.stock, min_stock=excluded.min_stock, note=excluded.note,
            updated_at=excluded.updated_at, deleted=excluded.deleted`,
-        [r.id, r.name || '', r.sku || '', r.category || '', r.unit || 'cái',
+        [r.id, r.name || '', r.sku || '', r.barcode || '', r.category || '', r.unit || 'cái',
          +r.costPrice || 0, +r.salePrice || 0, +r.stock || 0, +r.minStock || 0,
          r.note || '', r.updatedAt || '', r.deleted ? 1 : 0]
       );

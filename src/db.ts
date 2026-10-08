@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS products (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
   sku TEXT NOT NULL DEFAULT '',
+  barcode TEXT NOT NULL DEFAULT '',
   category TEXT NOT NULL DEFAULT '',
   unit TEXT NOT NULL DEFAULT 'cái',
   cost_price REAL NOT NULL DEFAULT 0,
@@ -31,6 +32,7 @@ CREATE TABLE IF NOT EXISTS products (
   deleted INTEGER NOT NULL DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS idx_products_name ON products(name);
+CREATE INDEX IF NOT EXISTS idx_products_barcode ON products(barcode);
 
 CREATE TABLE IF NOT EXISTS customers (
   id TEXT PRIMARY KEY,
@@ -84,9 +86,19 @@ CREATE TABLE IF NOT EXISTS meta (
 
 /** Khởi tạo schema + dữ liệu mặc định */
 export async function initDb(db: DbLike): Promise<void> {
+  migrate(db);
   db.execSync(SCHEMA);
   ensureDefaultMeta(db);
   seedIfEmpty(db);
+}
+
+/** Migration cho DB cũ: thêm cột mới nếu thiếu (lỗi "duplicate column" = đã có rồi, bỏ qua) */
+function migrate(db: DbLike): void {
+  try {
+    db.execSync("ALTER TABLE products ADD COLUMN barcode TEXT NOT NULL DEFAULT ''");
+  } catch {
+    // cột đã tồn tại — bỏ qua
+  }
 }
 
 function ensureDefaultMeta(db: DbLike): void {

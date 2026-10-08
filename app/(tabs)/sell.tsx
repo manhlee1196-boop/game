@@ -5,7 +5,8 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { useDb } from '../../src/store';
 import { Ionicons } from '@expo/vector-icons';
 import { Card, Button, Input, Chip, ModalSheet, EmptyState } from '../../src/components/ui';
-import { listProducts, listCustomers, getCustomer, createInvoice } from '../../src/api';
+import { BarcodeScanner } from '../../src/components/BarcodeScanner';
+import { listProducts, listCustomers, getCustomer, createInvoice, findProductByBarcode } from '../../src/api';
 import { getMeta } from '../../src/db';
 import { fmtMoney, fmtQty, parseNum } from '../../src/utils';
 import { colors, radius } from '../../src/theme';
@@ -36,6 +37,7 @@ export default function SellScreen() {
   const [note, setNote] = useState('');
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState<Invoice | null>(null);
+  const [scanning, setScanning] = useState(false);
 
   const products = listProducts(db, q);
   const customer = customerId ? getCustomer(db, customerId) : null;
@@ -59,6 +61,17 @@ export default function SellScreen() {
       }
       return [...prev, { product: p, qty: 1, unitPrice: p.salePrice }];
     });
+  };
+
+  // Quét mã vạch → thêm sản phẩm vào giỏ
+  const handleScanned = (code: string) => {
+    setScanning(false);
+    const p = findProductByBarcode(db, code);
+    if (!p) {
+      Alert.alert('Không tìm thấy', `Không có sản phẩm nào có mã "${code}". Hãy thêm sản phẩm trước (tab Sản phẩm).`);
+      return;
+    }
+    addToCart(p);
   };
 
   const changeQty = (id: string, delta: number) => {
@@ -147,16 +160,32 @@ export default function SellScreen() {
         </Card>
       </Pressable>
 
-      {/* Tìm kiếm */}
-      <View style={{ marginHorizontal: 14, marginBottom: 8, flexDirection: 'row', alignItems: 'center', backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, paddingHorizontal: 10 }}>
-        <Ionicons name="search" size={17} color={colors.faint} />
-        <TextInput
-          value={q}
-          onChangeText={setQ}
-          placeholder="Tìm sản phẩm để bán..."
-          placeholderTextColor={colors.faint}
-          style={{ flex: 1, paddingVertical: 10, fontSize: 14, color: colors.text, marginLeft: 6 }}
-        />
+      {/* Tìm kiếm + quét mã */}
+      <View style={{ marginHorizontal: 14, marginBottom: 8, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, paddingHorizontal: 10 }}>
+          <Ionicons name="search" size={17} color={colors.faint} />
+          <TextInput
+            value={q}
+            onChangeText={setQ}
+            placeholder="Tìm sản phẩm để bán..."
+            placeholderTextColor={colors.faint}
+            style={{ flex: 1, paddingVertical: 10, fontSize: 14, color: colors.text, marginLeft: 6 }}
+          />
+        </View>
+        <Pressable
+          onPress={() => setScanning(true)}
+          style={{
+            width: 42,
+            height: 42,
+            borderRadius: radius.md,
+            backgroundColor: colors.primary,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          hitSlop={6}
+        >
+          <Ionicons name="barcode-outline" size={22} color="#fff" />
+        </Pressable>
       </View>
 
       {/* Danh sách sản phẩm */}
@@ -338,6 +367,15 @@ export default function SellScreen() {
           </Pressable>
         ))}
       </ModalSheet>
+
+      {/* Quét mã vạch */}
+      {scanning ? (
+        <BarcodeScanner
+          title="Quét mã để thêm vào giỏ"
+          onScan={handleScanned}
+          onClose={() => setScanning(false)}
+        />
+      ) : null}
     </SafeAreaView>
   );
 }

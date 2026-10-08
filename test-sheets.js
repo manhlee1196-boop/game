@@ -117,7 +117,9 @@ check('tạo tab Meta', !!ss.sheets['Meta']);
 const pHeader = ss.sheets['Products'].get(1, 1);
 check('header Products bắt đầu "id"', pHeader === 'id');
 check('ghi đúng tên sản phẩm', ss.sheets['Products'].get(2, 2) === 'Nước suối');
-check('ghi đúng giá (number)', ss.sheets['Products'].get(2, 7) === 32000);
+// cột 4 = barcode (mới thêm) → salePrice dịch sang cột 8
+check('ghi đúng giá (number)', ss.sheets['Products'].get(2, 8) === 32000);
+check('cột 4 là barcode', ss.sheets['Products'].get(1, 4) === 'barcode');
 
 console.log('2) PULL (đọc lại):');
 const res2 = sandbox.doGet({ parameter: { op: 'pull' } });
