@@ -45,13 +45,26 @@ Mở địa chỉ `http://localhost:8081` trên trình duyệt.
 
 ### 3. Đóng gói thành APK để cài đặt
 
-```bash
-npm i -g eas-cli
-eas login
-eas build --platform android --profile preview
-```
+👉 **Đọc kỹ: [XAY-DUNG-APK.md](./XAY-DUNG-APK.md)** — 4 cách từ nhanh đến
+chuyên sâu:
 
-Hoặc dùng **EAS Build** trên [expo.dev](https://expo.dev) (tạo tài khoản Expo miễn phí, liên kết repo). Bản build `preview` cho APK/Expo Development Client; bản `production` cho AAB lên CH Play.
+1. **Expo Go** — thử ngay, không cần APK.
+2. **EAS Build** (khuyến nghị) — build trên cloud Expo, chỉ cần tài khoản
+   Expo miễn phí:
+   ```bash
+   npm i -g eas-cli
+   eas login
+   npm run build:apk:eas   # = eas build --platform android --profile preview
+   ```
+   Tải file APK tại [expo.dev/dashboard](https://expo.dev/dashboard) → tab Builds.
+3. **Build local** (cần Android Studio + JDK 17):
+   ```bash
+   npm run prebuild:android
+   cd android && ./gradlew assembleDebug
+   # APK: android/app/build/outputs/apk/debug/app-debug.apk
+   ```
+4. **GitHub Actions** — workflow "Build APK (Android)" đã sẵn (dùng sau khi
+   merge vào `main`).
 
 ## ☁️ Kết nối Google Sheets (bắt buộc đọc kỹ nếu dùng)
 

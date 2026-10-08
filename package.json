@@ -34,12 +34,14 @@
   },
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web",
     "test:core": "tsx test-core.mts",
     "test:sheets": "node test-sheets.js",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build:apk:eas": "eas build --platform android --profile preview",
+    "prebuild:android": "expo prebuild --platform android --no-install"
   },
   "private": true
 }
