@@ -10,7 +10,7 @@ jobs:
   build-apk:
     name: Build APK debug
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
 
     steps:
       - name: Checkout
@@ -19,7 +19,8 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # react-native 0.86 yêu cầu Node ^20.19.4 || ^22.13.0 || ^24.3.0 || >=25
+          node-version: 22
           cache: npm
 
       - name: Cài dependencies
@@ -37,15 +38,17 @@ jobs:
           java-version: 17
           cache: gradle
 
+      # react-native 0.86 / Expo SDK 57: compileSdk=36, buildTools=36.0.0,
+      # ndk=27.1.12297006 (các module Expo biên dịch C++ cần NDK + CMake).
       - name: Cài Android SDK
         uses: android-actions/setup-android@v3
         with:
           packages: |
             platform-tools
-            platforms;android-35
             platforms;android-36
-            build-tools;35.0.0
             build-tools;36.0.0
+            ndk;27.1.12297006
+            cmake;3.22.1
 
       - name: Build APK (debug)
         working-directory: android

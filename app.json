@@ -7,12 +7,18 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "scheme": "kohanghuadon",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFFFFF"
+    },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.kohang.hoaDon"
+      "bundleIdentifier": "com.kohang.hoadon"
     },
     "android": {
-      "package": "com.kohang.hoaDon",
+      "package": "com.kohang.hoadon",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#2757D6",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -28,9 +34,9 @@
       [
         "expo-camera",
         {
-          "permissions": [
-            "Ứng dụng cần quyền camera để quét mã vạch sản phẩm"
-          ]
+          "cameraPermission": "Ứng dụng cần quyền camera để quét mã vạch sản phẩm",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
         }
       ]
     ]
