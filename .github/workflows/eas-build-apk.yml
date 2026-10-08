@@ -1,0 +1,53 @@
+name: EAS Build APK (expo.dev cloud)
+
+# Build APK trên cloud của Expo, chạy từ GitHub Actions.
+# Ưu tiên dùng cách này khi bạn KHÔNG muốn cài Android Studio / JDK / Gradle.
+#
+# CẦN 1 BÍ MẬT (secret) — làm 1 lần:
+#   1. Đăng nhập https://expo.dev -> avatar -> Settings -> Access tokens
+#      -> Create token (chọn role "Can create and view builds").
+#   2. Repo GitHub -> Settings -> Secrets and variables -> Actions
+#      -> New repository secret -> tên: EXPO_TOKEN -> dán token.
+#   TUYỆT ĐỐI không commit token vào repo, không gửi token qua chat.
+#
+# Chạy: tab Actions -> "EAS Build APK (expo.dev cloud)" -> Run workflow.
+# Theo dõi + tải APK: https://expo.dev/dashboard -> project -> tab Builds.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  eas-build-apk:
+    name: EAS build Android (preview / APK)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          # react-native 0.86 yêu cầu Node ^20.19.4 || ^22.13.0 || ^24.3.0 || >=25
+          node-version: 22
+          cache: npm
+
+      - name: Cài dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Cài EAS CLI + đăng nhập bằng EXPO_TOKEN
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      # Lần chạy đầu, nếu app.json chưa có extra.eas.projectId thì bước này
+      # tạo project EAS mới (theo "slug" trong app.json) dưới tài khoản của token.
+      - name: Liên kết project với tài khoản Expo
+        run: npx eas-cli init --non-interactive
+
+      # --no-wait: không giữ job GitHub chờ 10-20 phút; build chạy tiếp trên
+      # server Expo và xem/tải ở expo.dev/dashboard.
+      - name: Build APK (profile preview)
+        run: npx eas-cli build --platform android --profile preview --non-interactive --no-wait

@@ -54,6 +54,36 @@ npm run build:apk:eas
 
 ---
 
+## Cách 2b: EAS Build chạy từ GitHub Actions (không cần mở terminal)
+
+Repo có sẵn workflow **EAS Build APK (expo.dev cloud)**
+(`.github/workflows/eas-build-apk.yml`). Build vẫn chạy trên cloud của Expo,
+nhưng bạn bấm nút trên GitHub thay vì gõ lệnh.
+
+Cần 1 **secret** (làm đúng 1 lần):
+
+1. Đăng nhập [expo.dev](https://expo.dev) → avatar → **Settings** → **Access
+   tokens** → **Create token** (role: *Can create and view builds*). Copy token.
+2. Repo GitHub → **Settings** → **Secrets and variables** → **Actions** →
+   **New repository secret** → Name: `EXPO_TOKEN` → dán token → **Add secret**.
+
+> ⚠️ Token này cho phép build app dưới tài khoản của bạn. **Không** commit vào
+> repo, **không** dán vào chat/issue. Chỉ để trong GitHub Secrets.
+
+Chạy: tab **Actions** → **"EAS Build APK (expo.dev cloud)"** → **Run workflow**.
+Job GitHub chỉ đẩy việc lên Expo rồi kết thúc (cờ `--no-wait`); theo dõi và tải
+APK tại [expo.dev/dashboard](https://expo.dev/dashboard) → project → tab **Builds**.
+
+> Giống Cách 4, workflow này phải nằm trên **nhánh mặc định (`main`)** mới bấm
+> chạy được.
+>
+> Lần chạy đầu, nếu `app.json` chưa có `extra.eas.projectId`, bước
+> `eas init --non-interactive` sẽ tự tạo project EAS theo `slug` trong `app.json`.
+> Nếu bước đó báo lỗi "not linked", chạy **Cách 2** một lần trên máy bạn — EAS
+> sẽ ghi `extra.eas.projectId` vào `app.json`, commit lại rồi từ đó workflow chạy ổn định.
+
+---
+
 ## Cách 3: Build ngay trên máy tính (cần Android Studio)
 
 Nếu máy bạn đã cài **Android Studio** (kèm JDK 17 — cài theo gói luôn):
