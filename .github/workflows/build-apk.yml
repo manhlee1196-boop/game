@@ -40,15 +40,14 @@ jobs:
 
       # react-native 0.86 / Expo SDK 57: compileSdk=36, buildTools=36.0.0,
       # ndk=27.1.12297006 (các module Expo biên dịch C++ cần NDK + CMake).
+      # LƯU Ý: setup-android@v3 tách danh sách "packages" theo DẤU CÁCH (không
+      # tách theo xuống dòng) nên phải để TẤT CẢ trên MỘT dòng như dưới đây.
+      # Nếu viết nhiều dòng (kiểu YAML "|"), sdkmanager sẽ nhận cả khối thành
+      # 1 tên package -> "Failed to find package" + exit code 1.
       - name: Cài Android SDK
         uses: android-actions/setup-android@v3
         with:
-          packages: |
-            platform-tools
-            platforms;android-36
-            build-tools;36.0.0
-            ndk;27.1.12297006
-            cmake;3.22.1
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0 ndk;27.1.12297006 cmake;3.22.1'
 
       - name: Build APK (debug)
         working-directory: android
