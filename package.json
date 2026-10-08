@@ -1,0 +1,47 @@
+{
+  "name": "kho-hang-hoa-don",
+  "version": "1.0.0",
+  "main": "expo-router/entry",
+  "dependencies": {
+    "@expo/vector-icons": "^15.1.1",
+    "expo": "~57.0.27",
+    "expo-camera": "^57.0.6",
+    "expo-constants": "~57.0.21",
+    "expo-file-system": "~57.0.7",
+    "expo-haptics": "~57.0.3",
+    "expo-linking": "~57.0.12",
+    "expo-router": "~57.0.25",
+    "expo-sharing": "~57.0.22",
+    "expo-sqlite": "~57.0.4",
+    "expo-status-bar": "~57.0.1",
+    "jspdf": "^4.2.1",
+    "react": "19.2.3",
+    "react-dom": "^19.2.3",
+    "react-native": "0.86.3",
+    "react-native-gesture-handler": "~2.32.0",
+    "react-native-reanimated": "^4.5.1",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "~4.26.0",
+    "react-native-web": "^0.21.3"
+  },
+  "devDependencies": {
+    "@expo-google-fonts/roboto": "^0.4.3",
+    "@types/react": "~19.2.2",
+    "@types/sql.js": "^1.4.11",
+    "sql.js": "^1.14.2",
+    "tsx": "^4.23.15",
+    "typescript": "~6.0.3"
+  },
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web",
+    "test:core": "tsx test-core.mts",
+    "test:sheets": "node test-sheets.js",
+    "typecheck": "tsc --noEmit",
+    "build:apk:eas": "eas build --platform android --profile preview",
+    "prebuild:android": "expo prebuild --platform android --no-install"
+  },
+  "private": true
+}
