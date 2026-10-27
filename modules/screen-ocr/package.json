@@ -1,0 +1,7 @@
+{
+  "name": "screen-ocr",
+  "version": "1.0.0",
+  "description": "Đọc chữ trên màn hình (MediaProjection + ML Kit OCR) cho Android",
+  "main": "index.ts",
+  "private": true
+}

@@ -16,6 +16,7 @@ App di động (Android) giúp cửa hàng nhỏ quản lý **sản phẩm, tồ
 | 📊 Báo cáo | Doanh thu, lãi gộp, biên lãi theo Hôm nay/7 ngày/Tháng/Năm; top 10 sản phẩm bán chạy; giá trị tồn kho; hàng sắp hết |
 | ☁️ Đồng bộ Google Sheets | Sao lưu & lấy dữ liệu 2 chiều qua Google Apps Script (không cần Firebase/máy chủ) |
 | ⚙️ Cài đặt | Thông tin cửa hàng in trên hóa đơn, tiền tố số hóa đơn, VAT mặc định, xóa dữ liệu |
+| 🎮 Đọc dữ liệu màn hình (OCR) | Đọc chữ/số đang hiển thị trên game hoặc app khác bằng MediaProjection + ML Kit, có **bảng nổi** xem ngay trên game. Chỉ có trên **APK/dev build** — xem [DOC-MAN-HINH-GAME.md](./DOC-MAN-HINH-GAME.md) |
 
 ## 🚀 Chạy app
 
@@ -66,6 +67,16 @@ chuyên sâu:
 4. **GitHub Actions** — workflow "Build APK (Android)" đã sẵn (dùng sau khi
    merge vào `main`).
 
+### 4. Đọc dữ liệu trên màn hình game (tính năng native)
+
+Màn hình **Trang chủ → “Đọc dữ liệu trên màn hình”** dùng module native
+[`modules/screen-ocr`](./modules/screen-ocr) (Kotlin: MediaProjection + ML Kit OCR)
+để đọc chữ/số đang hiện trên màn hình và có thể hiện **bảng nổi** trên game.
+
+- ⚠️ Chỉ hoạt động trong **APK / development build**, không chạy trên web hay Expo Go.
+- Cách build, kiến trúc, giới hạn của Android và cách tùy biến regex/labels:
+  👉 **[DOC-MAN-HINH-GAME.md](./DOC-MAN-HINH-GAME.md)**
+
 ## ☁️ Kết nối Google Sheets (bắt buộc đọc kỹ nếu dùng)
 
 Dữ liệu **mặc định lưu trong điện thoại** — app chạy tốt 100% khi offline.
@@ -103,6 +114,7 @@ app/                      # Giao diện (expo-router)
   invoice-detail.tsx      # Chi tiết hóa đơn + chia sẻ PDF
   reports.tsx             # Báo cáo
   settings.tsx            # Cài đặt + đồng bộ Google Sheets
+  screen-reader.tsx       # Đọc dữ liệu trên màn hình (OCR, bảng nổi)
 src/
   db.ts                   # Schema SQLite + dữ liệu mẫu lần đầu
   api.ts                  # CRUD, tạo hóa đơn, báo cáo
@@ -111,6 +123,9 @@ src/
   share.ts                # Chia sẻ / lưu PDF
   fonts/roboto.ts         # Font Roboto base64 (hỗ trợ tiếng Việt)
   components/ui.tsx       # Component UI dùng chung
+  screen-ocr.ts           # Lớp bọc JS cho module native đọc màn hình
+modules/screen-ocr/       # Module native Android (Kotlin): MediaProjection + ML Kit OCR
+  android/…               # Service chụp màn hình, overlay, quyền, gradle
 google-sheets-backend/
   Code.gs                 # Backend Google Apps Script (dán vào Apps Script)
 ```

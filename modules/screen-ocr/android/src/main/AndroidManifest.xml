@@ -1,0 +1,19 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <!-- Dịch vụ chạy nền để chụp màn hình khi app ở background -->
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
+  <!-- Hiện thông báo của dịch vụ (Android 13+) -->
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+  <!-- Vẽ bảng kết quả nổi trên game (cần người dùng cấp trong Cài đặt) -->
+  <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+  <application>
+    <service
+      android:name=".ScreenCaptureService"
+      android:enabled="true"
+      android:exported="false"
+      android:foregroundServiceType="mediaProjection" />
+  </application>
+
+</manifest>

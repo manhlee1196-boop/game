@@ -1,0 +1,22 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'expo.modules.screenocr'
+version = '1.0.0'
+
+android {
+  namespace "expo.modules.screenocr"
+
+  defaultConfig {
+    versionCode 1
+    versionName "1.0.0"
+  }
+}
+
+dependencies {
+  // ML Kit text recognition (Latin script, hỗ trợ tiếng Việt), bundled model.
+  implementation "com.google.mlkit:text-recognition:16.0.1"
+  implementation "androidx.core:core-ktx:1.18.0"
+}

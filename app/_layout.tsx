@@ -20,6 +20,7 @@ export default function RootLayout() {
         <Stack.Screen name="invoice-detail" options={{ presentation: 'modal' }} />
         <Stack.Screen name="reports" options={{ presentation: 'modal' }} />
         <Stack.Screen name="settings" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="screen-reader" options={{ presentation: 'modal' }} />
       </Stack>
     </DataProvider>
   );

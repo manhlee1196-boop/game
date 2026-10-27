@@ -90,6 +90,24 @@ export default function HomeScreen() {
           />
         </View>
 
+        {/* Đọc dữ liệu trên màn hình (game / app khác) */}
+        <Pressable onPress={() => router.push('/screen-reader')}>
+          <Card style={{ padding: 12, marginBottom: 12, flexDirection: 'row', alignItems: 'center' }}>
+            <View style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center', marginRight: 10 }}>
+              <Ionicons name="scan" size={18} color={colors.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 13, fontWeight: '700', color: colors.text }}>
+                Đọc dữ liệu trên màn hình
+              </Text>
+              <Text style={{ fontSize: 11.5, color: colors.sub, marginTop: 1 }}>
+                OCR chữ/số đang hiển thị trên game
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.faint} />
+          </Card>
+        </Pressable>
+
         {syncMsg ? (
           <Card style={{ padding: 12, marginBottom: 14, backgroundColor: syncMsg.startsWith('Lỗi') ? colors.dangerSoft : colors.successSoft, borderColor: syncMsg.startsWith('Lỗi') ? '#FBD5D5' : '#A6F4C5' }}>
             <Text style={{ fontSize: 12.5, color: syncMsg.startsWith('Lỗi') ? colors.danger : '#067647', fontWeight: '600' }}>{syncMsg}</Text>
