@@ -39,3 +39,7 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+audiobook/
+
+# Audiobook MP3
+Giao-trinh-phi-tinh-Luong-phai-noi-dung-nu.mp3
