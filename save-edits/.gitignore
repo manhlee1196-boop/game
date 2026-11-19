@@ -1,0 +1,3 @@
+# Keep the uploaded original save private; publish only the edited deliverable.
+/savefile0.backup.sf
+/__pycache__/

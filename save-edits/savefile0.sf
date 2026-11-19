@@ -1,0 +1,841 @@
+{
+  "HeroineName": "Heroine",
+  "NextTurn": "",
+  "Favorability": 99999,
+  "Emotion": 5,
+  "NextTurnEmotion": 0,
+  "Hungry": -5,
+  "DislikeExp": 0,
+  "Violet": 999999,
+  "Target_Violet": 1500,
+  "Deadline": 10,
+  "ActionPoint": 99,
+  "MaxActionPoint": 99,
+  "Turn": 6,
+  "Clean": 100,
+  "Money": 99999999,
+  "Contribution": 999999,
+  "BattleCount": 0,
+  "BathCount": 4,
+  "BathClean": 0,
+  "InteractiveKissCount": 0,
+  "isBathinTurn": true,
+  "Days": 6,
+  "isTurnStart": false,
+  "isHaveHinTurn": true,
+  "isGameOver": false,
+  "isFrsitH": false,
+  "H_Strength": 999999,
+  "H_Energy": 999999,
+  "AchievementDatas": {
+    "0": 0,
+    "1": 1,
+    "2": 0,
+    "3": 1,
+    "4": 76,
+    "5": 11,
+    "6": 8,
+    "7": 4910,
+    "8": 2,
+    "9": 0,
+    "10": 0,
+    "11": 0,
+    "12": 0,
+    "13": 8,
+    "14": 5890
+  },
+  "AchievementIDs": {
+    "0": {
+      "ID": "16",
+      "name": "Accomplishment_Name_16",
+      "info": "Accomplishment_Info_16",
+      "valueType": "Energy",
+      "value": 600
+    },
+    "1": {
+      "ID": "25",
+      "name": "Accomplishment_Name_25",
+      "info": "Accomplishment_Info_25",
+      "valueType": "Energy",
+      "value": 600
+    },
+    "2": {
+      "ID": "4",
+      "name": "Accomplishment_Name_4",
+      "info": "Accomplishment_Info_4",
+      "valueType": "Strength",
+      "value": 4000,
+      "startLV": "Accomplishment_Reward_4"
+    },
+    "3": {
+      "ID": "10",
+      "name": "Accomplishment_Name_10",
+      "info": "Accomplishment_Info_10",
+      "valueType": "Strength",
+      "value": 4000,
+      "startLV": "Accomplishment_Reward_10"
+    },
+    "4": {
+      "ID": "20",
+      "name": "Accomplishment_Name_20",
+      "info": "Accomplishment_Info_20",
+      "valueType": "Energy",
+      "value": 600
+    }
+  },
+  "Mouth": {
+    "ExpName": "Mouth",
+    "MaxExp": 10000,
+    "canLevelUp": true,
+    "_exp": 0,
+    "_Lv": 5,
+    "MaxLv": 5,
+    "StartLv": 0
+  },
+  "Breast": {
+    "ExpName": "Breast",
+    "MaxExp": 10000,
+    "canLevelUp": true,
+    "_exp": 0,
+    "_Lv": 5,
+    "MaxLv": 5,
+    "StartLv": 1
+  },
+  "Clitoris": {
+    "ExpName": "Clitoris",
+    "MaxExp": 10000,
+    "canLevelUp": true,
+    "_exp": 0,
+    "_Lv": 5,
+    "MaxLv": 5,
+    "StartLv": 0
+  },
+  "Vagina": {
+    "ExpName": "Vagina",
+    "MaxExp": 10000,
+    "canLevelUp": true,
+    "_exp": 0,
+    "_Lv": 5,
+    "MaxLv": 5,
+    "StartLv": 1
+  },
+  "Lubricating": {
+    "MaxExp": 10000,
+    "canLevelUp": true,
+    "_exp": 0,
+    "_Lv": 5,
+    "MaxLv": 5,
+    "StartLv": 0
+  },
+  "Dislike": {
+    "ExpName": "Dislike",
+    "MaxExp": 10000,
+    "canLevelUp": true,
+    "_exp": 0,
+    "_Lv": 0,
+    "MaxLv": 3,
+    "StartLv": 0
+  },
+  "SkinID": "101",
+  "OwnClothes": {
+    "0": "def",
+    "1": "nude",
+    "2": "miko",
+    "3": "maid",
+    "4": "suku",
+    "5": "maho",
+    "6": "bikini"
+  },
+  "OpenData": {
+    "0": "Item_",
+    "1": "CG_turn_2",
+    "2": "CG_turn_2",
+    "3": "normal_h1",
+    "4": "normal_h2",
+    "5": "normal_h3",
+    "6": "normal_h4",
+    "7": "normal_h5",
+    "8": "counter_h1",
+    "9": "counter_h2",
+    "10": "counter_h3",
+    "11": "counter_h4",
+    "12": "counter_h5",
+    "13": "hcg101",
+    "14": "common101"
+  },
+  "H_Count": 5,
+  "Violet_Count": 0,
+  "Stages": {
+    "0": {
+      "Name": "Village",
+      "stageName": 0,
+      "MaxStable": {
+        "0": 1000,
+        "1": 3000,
+        "2": 5000,
+        "3": 8000
+      },
+      "BoostProbability": {
+        "0": 1,
+        "1": 1,
+        "2": 9,
+        "3": 4,
+        "4": 9,
+        "5": 1,
+        "6": 1
+      },
+      "Stable": 8000,
+      "Known": 100,
+      "AddKnown": 20,
+      "MinMoney": 100,
+      "MaxMoney": 50,
+      "MinItem": 0,
+      "MaxItem": 0,
+      "isMoneyBoost": false,
+      "isItemBoost": false,
+      "isVioletBoost": false,
+      "isDisrupt": false,
+      "isEvent": false,
+      "isBreak": false,
+      "isOpen": true,
+      "isGetItem": false
+    },
+    "1": {
+      "Name": "Town",
+      "stageName": 1,
+      "MaxStable": {
+        "0": 1000,
+        "1": 5000,
+        "2": 8000,
+        "3": 15000
+      },
+      "BoostProbability": {
+        "0": 1,
+        "1": 1,
+        "2": 1,
+        "3": 1,
+        "4": 6,
+        "5": 4,
+        "6": 6
+      },
+      "Stable": 15000,
+      "Known": 100,
+      "AddKnown": 15,
+      "MinMoney": 250,
+      "MaxMoney": 500,
+      "MinItem": 0,
+      "MaxItem": 0,
+      "isMoneyBoost": false,
+      "isItemBoost": false,
+      "isVioletBoost": false,
+      "isDisrupt": false,
+      "isEvent": false,
+      "isBreak": false,
+      "isOpen": true,
+      "isGetItem": false
+    },
+    "2": {
+      "Name": "City",
+      "stageName": 2,
+      "MaxStable": {
+        "0": 500,
+        "1": 1000,
+        "2": 18000,
+        "3": 30000
+      },
+      "BoostProbability": {
+        "0": 9,
+        "1": 9,
+        "2": 9,
+        "3": 1,
+        "4": 1,
+        "5": 1,
+        "6": 1
+      },
+      "Stable": 30000,
+      "Known": 100,
+      "AddKnown": 12,
+      "MinMoney": 750,
+      "MaxMoney": 500,
+      "MinItem": 0,
+      "MaxItem": 0,
+      "isMoneyBoost": false,
+      "isItemBoost": false,
+      "isVioletBoost": false,
+      "isDisrupt": false,
+      "isEvent": false,
+      "isBreak": false,
+      "isOpen": true,
+      "isGetItem": false
+    },
+    "3": {
+      "Name": "Capital",
+      "stageName": 3,
+      "MaxStable": {
+        "0": 500,
+        "1": 1000,
+        "2": 1000,
+        "3": 50000
+      },
+      "BoostProbability": {
+        "0": 1,
+        "1": 1,
+        "2": 6,
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "6": 6
+      },
+      "Stable": 50000,
+      "Known": 100,
+      "AddKnown": 10,
+      "MinMoney": 1000,
+      "MaxMoney": 1500,
+      "MinItem": 0,
+      "MaxItem": 0,
+      "isMoneyBoost": true,
+      "isItemBoost": false,
+      "isVioletBoost": false,
+      "isDisrupt": false,
+      "isEvent": false,
+      "isBreak": false,
+      "isOpen": true,
+      "isGetItem": false
+    },
+    "4": {
+      "Name": "Ranch",
+      "stageName": 4,
+      "MaxStable": {
+        "0": 500,
+        "1": 1000,
+        "2": 1500,
+        "3": 3000
+      },
+      "BoostProbability": {
+        "0": 2,
+        "1": 2,
+        "2": 2,
+        "3": 2,
+        "4": 2,
+        "5": 2,
+        "6": 2
+      },
+      "Stable": 3000,
+      "Known": 100,
+      "AddKnown": 50,
+      "MinMoney": 100,
+      "MaxMoney": 100,
+      "MinItem": 11,
+      "MaxItem": 11,
+      "isMoneyBoost": false,
+      "isItemBoost": true,
+      "isVioletBoost": false,
+      "isDisrupt": false,
+      "isEvent": false,
+      "isBreak": false,
+      "isOpen": true,
+      "isGetItem": false
+    },
+    "5": {
+      "Name": "Forest",
+      "stageName": 5,
+      "MaxStable": {
+        "0": 500,
+        "1": 1000,
+        "2": 1500,
+        "3": 2000
+      },
+      "BoostProbability": {
+        "0": 2,
+        "1": 5,
+        "2": 5,
+        "3": 2,
+        "4": 5,
+        "5": 5,
+        "6": 2
+      },
+      "Stable": 2000,
+      "Known": 100,
+      "AddKnown": 10,
+      "MinMoney": 50,
+      "MaxMoney": 50,
+      "MinItem": 1,
+      "MaxItem": 2,
+      "isMoneyBoost": false,
+      "isItemBoost": true,
+      "isVioletBoost": false,
+      "isDisrupt": false,
+      "isEvent": false,
+      "isBreak": false,
+      "isOpen": true,
+      "isGetItem": false
+    },
+    "6": {
+      "Name": "Tea",
+      "stageName": 6,
+      "MaxStable": {
+        "0": 500,
+        "1": 1000,
+        "2": 1500,
+        "3": 3000
+      },
+      "BoostProbability": {
+        "0": 6,
+        "1": 8,
+        "2": 2,
+        "3": 8,
+        "4": 6,
+        "5": 2,
+        "6": 6
+      },
+      "Stable": 3000,
+      "Known": 100,
+      "AddKnown": 35,
+      "MinMoney": 500,
+      "MaxMoney": 500,
+      "MinItem": 12,
+      "MaxItem": 12,
+      "isMoneyBoost": false,
+      "isItemBoost": false,
+      "isVioletBoost": false,
+      "isDisrupt": false,
+      "isEvent": false,
+      "isBreak": false,
+      "isOpen": true,
+      "isGetItem": false
+    },
+    "7": {
+      "Name": "Shopping",
+      "stageName": 7,
+      "MaxStable": {
+        "0": 500,
+        "1": 1000,
+        "2": 10000,
+        "3": 16000
+      },
+      "BoostProbability": {
+        "0": 8,
+        "1": 8,
+        "2": 8,
+        "3": 3,
+        "4": 8,
+        "5": 3,
+        "6": 8
+      },
+      "Stable": 16000,
+      "Known": 100,
+      "AddKnown": 20,
+      "MinMoney": 1500,
+      "MaxMoney": 500,
+      "MinItem": 11,
+      "MaxItem": 13,
+      "isMoneyBoost": false,
+      "isItemBoost": false,
+      "isVioletBoost": false,
+      "isDisrupt": false,
+      "isEvent": false,
+      "isBreak": false,
+      "isOpen": true,
+      "isGetItem": false
+    },
+    "8": {
+      "Name": "Strange",
+      "stageName": 8,
+      "MaxStable": {
+        "0": 500,
+        "1": 1000,
+        "2": 2000,
+        "3": 5000
+      },
+      "BoostProbability": {
+        "0": 2,
+        "1": 3,
+        "2": 8,
+        "3": 2,
+        "4": 8,
+        "5": 8,
+        "6": 8
+      },
+      "Stable": 5000,
+      "Known": 100,
+      "AddKnown": 30,
+      "MinMoney": 900,
+      "MaxMoney": 300,
+      "MinItem": 21,
+      "MaxItem": 24,
+      "isMoneyBoost": true,
+      "isItemBoost": false,
+      "isVioletBoost": false,
+      "isDisrupt": false,
+      "isEvent": false,
+      "isBreak": false,
+      "isOpen": true,
+      "isGetItem": false
+    },
+    "9": {
+      "Name": "Amusement",
+      "stageName": 9,
+      "MaxStable": {
+        "0": 500,
+        "1": 1000,
+        "2": 1000,
+        "3": 24000
+      },
+      "BoostProbability": {
+        "0": 4,
+        "1": 2,
+        "2": 2,
+        "3": 2,
+        "4": 2,
+        "5": 4,
+        "6": 4
+      },
+      "Stable": 24000,
+      "Known": 100,
+      "AddKnown": 20,
+      "MinMoney": 1000,
+      "MaxMoney": 800,
+      "MinItem": 13,
+      "MaxItem": 14,
+      "isMoneyBoost": false,
+      "isItemBoost": false,
+      "isVioletBoost": true,
+      "isDisrupt": false,
+      "isEvent": false,
+      "isBreak": false,
+      "isOpen": true,
+      "isGetItem": false
+    }
+  },
+  "serializeTexture": {
+    "x": 0,
+    "y": 0
+  },
+  "eventDatas": {
+    "0": {
+      "prefabName": "normal_h1",
+      "loadFolder": "hcg",
+      "openCondition": {
+        "0": {
+          "conditions": 5,
+          "conditioncompare": 0,
+          "value": "false"
+        },
+        "1": {
+          "conditions": 2,
+          "conditioncompare": 0,
+          "value": "500"
+        }
+      },
+      "isShow": true
+    },
+    "1": {
+      "prefabName": "normal_h2",
+      "loadFolder": "hcg",
+      "openCondition": {
+        "0": {
+          "conditions": 5,
+          "conditioncompare": 0,
+          "value": "false"
+        },
+        "1": {
+          "conditions": 2,
+          "conditioncompare": 0,
+          "value": "1500"
+        },
+        "2": {
+          "conditions": 4,
+          "conditioncompare": 0,
+          "value": "normal_h1"
+        }
+      },
+      "isShow": true
+    },
+    "2": {
+      "prefabName": "normal_h3",
+      "loadFolder": "hcg",
+      "openCondition": {
+        "0": {
+          "conditions": 5,
+          "conditioncompare": 0,
+          "value": "false"
+        },
+        "1": {
+          "conditions": 2,
+          "conditioncompare": 0,
+          "value": "3000"
+        },
+        "2": {
+          "conditions": 5,
+          "conditioncompare": 0,
+          "value": "normal_h2"
+        }
+      },
+      "isShow": true
+    },
+    "3": {
+      "prefabName": "normal_h4",
+      "loadFolder": "hcg",
+      "openCondition": {
+        "0": {
+          "conditions": 5,
+          "conditioncompare": 0,
+          "value": "false"
+        },
+        "1": {
+          "conditions": 2,
+          "conditioncompare": 0,
+          "value": "5000"
+        },
+        "2": {
+          "conditions": 4,
+          "conditioncompare": 0,
+          "value": "normal_h3"
+        }
+      },
+      "isShow": true
+    },
+    "4": {
+      "prefabName": "normal_h5",
+      "loadFolder": "hcg",
+      "openCondition": {
+        "0": {
+          "conditions": 5,
+          "conditioncompare": 0,
+          "value": "false"
+        },
+        "1": {
+          "conditions": 2,
+          "conditioncompare": 0,
+          "value": "10000"
+        },
+        "2": {
+          "conditions": 4,
+          "conditioncompare": 0,
+          "value": "normal_h4"
+        }
+      },
+      "isShow": true
+    },
+    "5": {
+      "prefabName": "counter_h1",
+      "loadFolder": "hcg",
+      "openCondition": {
+        "0": {
+          "conditions": 5,
+          "conditioncompare": 0,
+          "value": "false"
+        },
+        "1": {
+          "conditions": 2,
+          "conditioncompare": 0,
+          "value": "15000"
+        },
+        "2": {
+          "conditions": 3,
+          "conditioncompare": 0,
+          "value": "50"
+        },
+        "3": {
+          "conditions": 4,
+          "conditioncompare": 0,
+          "value": "normal_h5"
+        }
+      },
+      "isShow": true
+    },
+    "6": {
+      "prefabName": "counter_h2",
+      "loadFolder": "hcg",
+      "openCondition": {
+        "0": {
+          "conditions": 5,
+          "conditioncompare": 0,
+          "value": "false"
+        },
+        "1": {
+          "conditions": 2,
+          "conditioncompare": 0,
+          "value": "20000"
+        },
+        "2": {
+          "conditions": 3,
+          "conditioncompare": 0,
+          "value": "50"
+        },
+        "3": {
+          "conditions": 4,
+          "conditioncompare": 0,
+          "value": "counter_h1"
+        }
+      },
+      "isShow": true
+    },
+    "7": {
+      "prefabName": "counter_h3",
+      "loadFolder": "hcg",
+      "openCondition": {
+        "0": {
+          "conditions": 5,
+          "conditioncompare": 2,
+          "value": "false"
+        },
+        "1": {
+          "conditions": 2,
+          "conditioncompare": 0,
+          "value": "30000"
+        },
+        "2": {
+          "conditions": 3,
+          "conditioncompare": 0,
+          "value": "50"
+        },
+        "3": {
+          "conditions": 4,
+          "conditioncompare": 0,
+          "value": "counter_h2"
+        }
+      },
+      "isShow": true
+    },
+    "8": {
+      "prefabName": "counter_h4",
+      "loadFolder": "hcg",
+      "openCondition": {
+        "0": {
+          "conditions": 5,
+          "conditioncompare": 2,
+          "value": "false"
+        },
+        "1": {
+          "conditions": 2,
+          "conditioncompare": 0,
+          "value": "40000"
+        },
+        "2": {
+          "conditions": 3,
+          "conditioncompare": 0,
+          "value": "50"
+        },
+        "3": {
+          "conditions": 4,
+          "conditioncompare": 0,
+          "value": "counter_h3"
+        }
+      },
+      "isShow": true
+    },
+    "9": {
+      "prefabName": "counter_h5",
+      "loadFolder": "hcg",
+      "openCondition": {
+        "0": {
+          "conditions": 5,
+          "conditioncompare": 2,
+          "value": "false"
+        },
+        "1": {
+          "conditions": 2,
+          "conditioncompare": 0,
+          "value": "50000"
+        },
+        "2": {
+          "conditions": 3,
+          "conditioncompare": 0,
+          "value": "50"
+        },
+        "3": {
+          "conditions": 4,
+          "conditioncompare": 0,
+          "value": "counter_h4"
+        }
+      },
+      "isShow": true
+    },
+    "10": {
+      "prefabName": "hcg101",
+      "loadFolder": "hcg",
+      "openCondition": {
+        "0": {
+          "conditions": 5,
+          "conditioncompare": 0,
+          "value": "false"
+        },
+        "1": {
+          "conditions": 2,
+          "conditioncompare": 0,
+          "value": "3000"
+        },
+        "2": {
+          "conditions": 1,
+          "conditioncompare": 0,
+          "value": "16"
+        }
+      },
+      "isShow": true
+    },
+    "11": {
+      "prefabName": "common101",
+      "loadFolder": "common",
+      "openCondition": {
+        "0": {
+          "conditions": 2,
+          "conditioncompare": 0,
+          "value": "6000"
+        },
+        "1": {
+          "conditions": 1,
+          "conditioncompare": 0,
+          "value": "26"
+        }
+      },
+      "isShow": true
+    }
+  },
+  "clothesEvents": {
+    "0": {
+      "clothesTag": "nude",
+      "getClothePreafabe": "getclothe0",
+      "turnClothePrefab": "turnclothe0",
+      "isOpen": true,
+      "isGet": true
+    },
+    "1": {
+      "clothesTag": "miko",
+      "getClothePreafabe": "getclothe2",
+      "turnClothePrefab": "turnclothe2",
+      "isOpen": true,
+      "isGet": true
+    },
+    "2": {
+      "clothesTag": "maid",
+      "getClothePreafabe": "getclothe3",
+      "turnClothePrefab": "turnclothe3",
+      "isOpen": true,
+      "isGet": true
+    },
+    "3": {
+      "clothesTag": "suku",
+      "getClothePreafabe": "getclothe4",
+      "turnClothePrefab": "turnclothe4",
+      "isOpen": true,
+      "isGet": true
+    },
+    "4": {
+      "clothesTag": "maho",
+      "getClothePreafabe": "getclothe5",
+      "turnClothePrefab": "turnclothe5",
+      "isOpen": true,
+      "isGet": true
+    },
+    "5": {
+      "clothesTag": "bikini",
+      "getClothePreafabe": "getclothe6",
+      "turnClothePrefab": "turnclothe6",
+      "isOpen": true,
+      "isGet": true
+    }
+  },
+  "saveDate": "2026/11/19 11:54",
+  "saveScene": "Home"
+}

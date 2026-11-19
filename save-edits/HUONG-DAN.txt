@@ -1,0 +1,65 @@
+BẢN SAVE ĐÃ CHỈNH SỬA
+====================
+Nguồn: savefile0.sf.txt do bạn cung cấp.
+
+CÁC TỆP TRONG GÓI TẢI
+- savefile0.sf: bản đã chỉnh, dùng nếu game nhận đuôi .sf.
+- savefile0.sf.txt: cùng nội dung, dùng nếu công cụ nhập save cần tệp .txt.
+- HUONG-DAN.txt: hướng dẫn này.
+
+Bản gốc dự phòng savefile0.backup.sf được giữ riêng trong phiên làm việc,
+không đưa lên GitHub và không có trong gói tải công khai. Trước khi thay
+save trên thiết bị của bạn, hãy tự sao lưu tệp gốc để có thể khôi phục.
+
+CÁC THAY ĐỔI
+- Money: giữ 99.999.999 (bản gốc đã có số tiền này).
+- Favorability: 99.999.
+- Violet: 999.999; Contribution: 999.999.
+- ActionPoint và MaxActionPoint: 99.
+- H_Strength và H_Energy: mỗi chỉ số 999.999.
+- Clean: 100; DislikeExp và kinh nghiệm Dislike: 0.
+- Các cấp kỹ năng tích cực: giữ ở MaxLv khai báo trong file (5/5),
+  kinh nghiệm ở cấp cuối là 0 để tránh vượt cấp. Dislike giữ cấp 0.
+- Mở cả 10 khu vực có trong Stages, đặt Known = 100 và Stable bằng
+  giá trị lớn nhất trong bảng MaxStable của từng khu vực.
+- Thêm đủ 6 trang phục đã có mã trong clothesEvents vào OwnClothes:
+  nude, miko, maid, suku, maho, bikini. Giữ trang phục mặc định def.
+  Đặt isOpen và isGet của 6 trang phục thành true.
+- Đánh dấu hoàn thành cả 12 sự kiện có trong eventDatas (isShow=true),
+  bổ sung tên prefab tương ứng vào OpenData và giữ mọi mục OpenData cũ.
+
+NHỮNG GÌ ĐƯỢC GIỮ NGUYÊN
+- Ngày/lượt chơi: Days=6, Turn=6; Deadline=10; mục tiêu Target_Violet=1500.
+- Tên nhân vật, trang phục đang dùng, cảnh Home, dữ liệu điều kiện sự kiện,
+  bảng phần thưởng và mã thành tựu, các bộ đếm lịch sử, cấu trúc JSON gốc.
+- Không đặt isGameOver=true, không đổi hạn chót hay tua ngày để tránh
+  tự kích hoạt kết thúc game.
+
+GIỚI HẠN CẦN BIẾT
+- Đây là bản tăng tài nguyên và hoàn thành các cờ được khai báo trong file,
+  không phải xác nhận đã đạt 100% toàn bộ nội dung của game.
+- Những số lớn bên trên là mức chỉnh hữu hạn, không phải giới hạn tự nhiên
+  của game. Không sửa MaxLv, MaxExp, bảng phần thưởng hoặc tự tạo mã vật phẩm.
+- File không có danh mục kho vật phẩm riêng và không có bảng mã đầy đủ
+  cho thành tựu. Chỉ các trang phục có mã sẵn được thêm vào sở hữu.
+- Các sự kiện được đánh dấu đã hoàn thành có thể không tự phát lại khi chơi.
+  Nếu Gallery hoặc kho đồ nằm ở tệp lưu khác, tệp đó chưa được chỉnh.
+- Chưa có game/tên game/phiên bản để kiểm tra việc nạp save trong game.
+  Không thể bảo đảm game không tính lại một số chỉ số sau khi tải.
+
+CÁCH DÙNG
+1. Thoát hẳn game và sao lưu thư mục save hiện tại.
+2. Nếu game có chức năng nhập save: nhập bản đã chỉnh với đúng đuôi tệp
+   mà game yêu cầu. Nếu game dùng tệp trên ổ đĩa: chép bản đã chỉnh vào
+   vị trí tệp cũ, giữ đúng tên và đuôi gốc; không mặc định rằng game nào
+   cũng dùng đuôi .sf chỉ vì tên tệp đính kèm có chuỗi này.
+3. Tránh để đồng bộ đám mây ghi đè bản chỉnh trong lúc thay tệp.
+4. Mở game, tải ô lưu tương ứng rồi kiểm tra tài nguyên, trang phục và bản đồ.
+5. Nếu game không nhận hoặc có lỗi, đóng game và khôi phục bản gốc
+   mà bạn đã sao lưu ở bước 1, giữ đúng tên/đuôi tệp của game.
+
+KIỂM TRA KỸ THUẬT
+Đã kiểm tra cú pháp/định dạng JSON, kiểu dữ liệu so với bản gốc,
+ID có sẵn của trang phục/sự kiện, cấp độ và giới hạn Stable theo file,
+độ đầy đủ của các khóa, và bản sao lưu trùng khớp byte với tệp nguồn.
+Các kiểm tra này không thay thế việc chạy thử trong game.
