@@ -1,20 +1,20 @@
 {
   "HeroineName": "Heroine",
   "NextTurn": "",
-  "Favorability": 99999,
+  "Favorability": 357,
   "Emotion": 5,
   "NextTurnEmotion": 0,
   "Hungry": -5,
   "DislikeExp": 0,
-  "Violet": 999999,
+  "Violet": 0,
   "Target_Violet": 1500,
   "Deadline": 10,
-  "ActionPoint": 99,
-  "MaxActionPoint": 99,
+  "ActionPoint": 9,
+  "MaxActionPoint": 9,
   "Turn": 6,
-  "Clean": 100,
+  "Clean": 70,
   "Money": 99999999,
-  "Contribution": 999999,
+  "Contribution": 0,
   "BattleCount": 0,
   "BathCount": 4,
   "BathClean": 0,
@@ -25,8 +25,8 @@
   "isHaveHinTurn": true,
   "isGameOver": false,
   "isFrsitH": false,
-  "H_Strength": 999999,
-  "H_Energy": 999999,
+  "H_Strength": 8000,
+  "H_Energy": 1800,
   "AchievementDatas": {
     "0": 0,
     "1": 1,
@@ -131,7 +131,7 @@
     "ExpName": "Dislike",
     "MaxExp": 10000,
     "canLevelUp": true,
-    "_exp": 0,
+    "_exp": 7275,
     "_Lv": 0,
     "MaxLv": 3,
     "StartLv": 0
@@ -149,19 +149,7 @@
   "OpenData": {
     "0": "Item_",
     "1": "CG_turn_2",
-    "2": "CG_turn_2",
-    "3": "normal_h1",
-    "4": "normal_h2",
-    "5": "normal_h3",
-    "6": "normal_h4",
-    "7": "normal_h5",
-    "8": "counter_h1",
-    "9": "counter_h2",
-    "10": "counter_h3",
-    "11": "counter_h4",
-    "12": "counter_h5",
-    "13": "hcg101",
-    "14": "common101"
+    "2": "CG_turn_2"
   },
   "H_Count": 5,
   "Violet_Count": 0,
@@ -184,8 +172,8 @@
         "5": 1,
         "6": 1
       },
-      "Stable": 8000,
-      "Known": 100,
+      "Stable": 1000,
+      "Known": 0,
       "AddKnown": 20,
       "MinMoney": 100,
       "MaxMoney": 50,
@@ -197,7 +185,7 @@
       "isDisrupt": false,
       "isEvent": false,
       "isBreak": false,
-      "isOpen": true,
+      "isOpen": false,
       "isGetItem": false
     },
     "1": {
@@ -218,8 +206,8 @@
         "5": 4,
         "6": 6
       },
-      "Stable": 15000,
-      "Known": 100,
+      "Stable": 1000,
+      "Known": 0,
       "AddKnown": 15,
       "MinMoney": 250,
       "MaxMoney": 500,
@@ -231,7 +219,7 @@
       "isDisrupt": false,
       "isEvent": false,
       "isBreak": false,
-      "isOpen": true,
+      "isOpen": false,
       "isGetItem": false
     },
     "2": {
@@ -252,8 +240,8 @@
         "5": 1,
         "6": 1
       },
-      "Stable": 30000,
-      "Known": 100,
+      "Stable": 500,
+      "Known": 0,
       "AddKnown": 12,
       "MinMoney": 750,
       "MaxMoney": 500,
@@ -265,7 +253,7 @@
       "isDisrupt": false,
       "isEvent": false,
       "isBreak": false,
-      "isOpen": true,
+      "isOpen": false,
       "isGetItem": false
     },
     "3": {
@@ -286,8 +274,8 @@
         "5": 3,
         "6": 6
       },
-      "Stable": 50000,
-      "Known": 100,
+      "Stable": 500,
+      "Known": 0,
       "AddKnown": 10,
       "MinMoney": 1000,
       "MaxMoney": 1500,
@@ -299,7 +287,7 @@
       "isDisrupt": false,
       "isEvent": false,
       "isBreak": false,
-      "isOpen": true,
+      "isOpen": false,
       "isGetItem": false
     },
     "4": {
@@ -320,8 +308,8 @@
         "5": 2,
         "6": 2
       },
-      "Stable": 3000,
-      "Known": 100,
+      "Stable": 500,
+      "Known": 0,
       "AddKnown": 50,
       "MinMoney": 100,
       "MaxMoney": 100,
@@ -333,7 +321,7 @@
       "isDisrupt": false,
       "isEvent": false,
       "isBreak": false,
-      "isOpen": true,
+      "isOpen": false,
       "isGetItem": false
     },
     "5": {
@@ -354,8 +342,8 @@
         "5": 5,
         "6": 2
       },
-      "Stable": 2000,
-      "Known": 100,
+      "Stable": 500,
+      "Known": 0,
       "AddKnown": 10,
       "MinMoney": 50,
       "MaxMoney": 50,
@@ -367,7 +355,7 @@
       "isDisrupt": false,
       "isEvent": false,
       "isBreak": false,
-      "isOpen": true,
+      "isOpen": false,
       "isGetItem": false
     },
     "6": {
@@ -388,8 +376,8 @@
         "5": 2,
         "6": 6
       },
-      "Stable": 3000,
-      "Known": 100,
+      "Stable": 500,
+      "Known": 0,
       "AddKnown": 35,
       "MinMoney": 500,
       "MaxMoney": 500,
@@ -401,7 +389,7 @@
       "isDisrupt": false,
       "isEvent": false,
       "isBreak": false,
-      "isOpen": true,
+      "isOpen": false,
       "isGetItem": false
     },
     "7": {
@@ -422,8 +410,8 @@
         "5": 3,
         "6": 8
       },
-      "Stable": 16000,
-      "Known": 100,
+      "Stable": 500,
+      "Known": 0,
       "AddKnown": 20,
       "MinMoney": 1500,
       "MaxMoney": 500,
@@ -435,7 +423,7 @@
       "isDisrupt": false,
       "isEvent": false,
       "isBreak": false,
-      "isOpen": true,
+      "isOpen": false,
       "isGetItem": false
     },
     "8": {
@@ -456,8 +444,8 @@
         "5": 8,
         "6": 8
       },
-      "Stable": 5000,
-      "Known": 100,
+      "Stable": 500,
+      "Known": 0,
       "AddKnown": 30,
       "MinMoney": 900,
       "MaxMoney": 300,
@@ -469,7 +457,7 @@
       "isDisrupt": false,
       "isEvent": false,
       "isBreak": false,
-      "isOpen": true,
+      "isOpen": false,
       "isGetItem": false
     },
     "9": {
@@ -490,8 +478,8 @@
         "5": 4,
         "6": 4
       },
-      "Stable": 24000,
-      "Known": 100,
+      "Stable": 500,
+      "Known": 0,
       "AddKnown": 20,
       "MinMoney": 1000,
       "MaxMoney": 800,
@@ -503,7 +491,7 @@
       "isDisrupt": false,
       "isEvent": false,
       "isBreak": false,
-      "isOpen": true,
+      "isOpen": false,
       "isGetItem": false
     }
   },
@@ -527,7 +515,7 @@
           "value": "500"
         }
       },
-      "isShow": true
+      "isShow": false
     },
     "1": {
       "prefabName": "normal_h2",
@@ -549,7 +537,7 @@
           "value": "normal_h1"
         }
       },
-      "isShow": true
+      "isShow": false
     },
     "2": {
       "prefabName": "normal_h3",
@@ -571,7 +559,7 @@
           "value": "normal_h2"
         }
       },
-      "isShow": true
+      "isShow": false
     },
     "3": {
       "prefabName": "normal_h4",
@@ -593,7 +581,7 @@
           "value": "normal_h3"
         }
       },
-      "isShow": true
+      "isShow": false
     },
     "4": {
       "prefabName": "normal_h5",
@@ -615,7 +603,7 @@
           "value": "normal_h4"
         }
       },
-      "isShow": true
+      "isShow": false
     },
     "5": {
       "prefabName": "counter_h1",
@@ -642,7 +630,7 @@
           "value": "normal_h5"
         }
       },
-      "isShow": true
+      "isShow": false
     },
     "6": {
       "prefabName": "counter_h2",
@@ -669,7 +657,7 @@
           "value": "counter_h1"
         }
       },
-      "isShow": true
+      "isShow": false
     },
     "7": {
       "prefabName": "counter_h3",
@@ -696,7 +684,7 @@
           "value": "counter_h2"
         }
       },
-      "isShow": true
+      "isShow": false
     },
     "8": {
       "prefabName": "counter_h4",
@@ -723,7 +711,7 @@
           "value": "counter_h3"
         }
       },
-      "isShow": true
+      "isShow": false
     },
     "9": {
       "prefabName": "counter_h5",
@@ -750,7 +738,7 @@
           "value": "counter_h4"
         }
       },
-      "isShow": true
+      "isShow": false
     },
     "10": {
       "prefabName": "hcg101",
@@ -772,7 +760,7 @@
           "value": "16"
         }
       },
-      "isShow": true
+      "isShow": false
     },
     "11": {
       "prefabName": "common101",
@@ -789,7 +777,7 @@
           "value": "26"
         }
       },
-      "isShow": true
+      "isShow": false
     }
   },
   "clothesEvents": {
